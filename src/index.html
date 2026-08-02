@@ -7,8 +7,8 @@
     <meta name="theme-color" content="#0D0F12" />
     <title>Unity Icon Studio</title>
     <link rel="icon" href="./assets/unity-icon-studio.svg" type="image/svg+xml" />
-    <link rel="stylesheet" href="./css/styles.css?v=6" />
-    <script src="./js/app.js?v=6" defer></script>
+    <link rel="stylesheet" href="./css/styles.css?v=7" />
+    <script src="./js/app.js?v=7" defer></script>
   </head>
   <body>
     <header class="app-header">
@@ -19,7 +19,7 @@
       <div class="header-actions">
         <span class="status" id="status" role="status">Ready</span>
         <button class="button secondary" id="reset-all" type="button">Reset</button>
-        <button class="button primary" id="export-svg-top" type="button">Download SVG</button>
+        <button class="button primary" id="export-svg-top" type="button">Download Unity SVG</button>
       </div>
     </header>
 
@@ -125,11 +125,12 @@
         <section class="control-block export-block">
           <div class="section-heading"><div><span class="eyebrow">06</span><h2>Export</h2></div></div>
           <div class="export-grid">
-            <button class="button primary" id="export-svg" type="button">SVG 64</button>
+            <button class="button primary" id="export-svg" type="button">Unity SVG</button>
             <button class="button secondary" data-png="64" type="button">PNG 64</button>
             <button class="button secondary" data-png="128" type="button">PNG 128</button>
             <button class="button secondary" data-png="256" type="button">PNG 256</button>
           </div>
+          <p class="control-note">SVG export is flattened to paths for Unity UI Toolkit Vector Image.</p>
         </section>
       </aside>
 

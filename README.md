@@ -30,10 +30,18 @@ Unity Icon Studio keeps the repetitive parts of script icon creation in one plac
 - Glyph SVG import by file picker or drag and drop
 - Position, scale, rotation, and text-size controls with sliders and exact numeric fields
 - Actual-size previews at 64, 48, and 32 pixels
-- SVG export and PNG export at 64, 128, and 256 pixels
+- Unity-compatible SVG export and PNG export at 64, 128, and 256 pixels
 - No application server, account, build step, or runtime dependency
 
 Editing and export happen locally in the browser. Only glyph search sends a request, using the public Iconify API.
+
+## Unity SVG export
+
+The SVG download is built specifically for Unity's **UI Toolkit Vector Image** importer. The editor flattens the selected shape and glyph into the root `64 × 64` coordinate system, converts the label into vector paths, writes the band as already-clipped geometry, and resolves every color directly on each path.
+
+Exported files contain a single root `<svg>` and path geometry only. They do not contain SVG text, nested SVGs, CSS, `currentColor`, transforms, clipping definitions, masks, filters, linked assets, or font references. Existing Unity `.meta` files are not involved or modified by the editor.
+
+The on-screen preview uses the browser renderer, while the downloaded SVG uses flattened geometry. Curves are sampled at sub-pixel precision so the result remains visually consistent and importable at 16, 32, and 64 pixels.
 
 ## Run locally
 

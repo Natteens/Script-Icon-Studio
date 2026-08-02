@@ -47,6 +47,30 @@ const shapes = {
   shield: "M6 3h52v31.5C58 48.5 47.5 58 32 62 16.5 58 6 48.5 6 34.5V3Z"
 };
 
+const vectorFont = {
+  A: "01110/10001/10001/11111/10001/10001/10001", B: "11110/10001/10001/11110/10001/10001/11110",
+  C: "01111/10000/10000/10000/10000/10000/01111", D: "11110/10001/10001/10001/10001/10001/11110",
+  E: "11111/10000/10000/11110/10000/10000/11111", F: "11111/10000/10000/11110/10000/10000/10000",
+  G: "01111/10000/10000/10111/10001/10001/01111", H: "10001/10001/10001/11111/10001/10001/10001",
+  I: "11111/00100/00100/00100/00100/00100/11111", J: "00111/00010/00010/00010/10010/10010/01100",
+  K: "10001/10010/10100/11000/10100/10010/10001", L: "10000/10000/10000/10000/10000/10000/11111",
+  M: "10001/11011/10101/10101/10001/10001/10001", N: "10001/11001/10101/10011/10001/10001/10001",
+  O: "01110/10001/10001/10001/10001/10001/01110", P: "11110/10001/10001/11110/10000/10000/10000",
+  Q: "01110/10001/10001/10001/10101/10010/01101", R: "11110/10001/10001/11110/10100/10010/10001",
+  S: "01111/10000/10000/01110/00001/00001/11110", T: "11111/00100/00100/00100/00100/00100/00100",
+  U: "10001/10001/10001/10001/10001/10001/01110", V: "10001/10001/10001/10001/10001/01010/00100",
+  W: "10001/10001/10001/10101/10101/10101/01010", X: "10001/10001/01010/00100/01010/10001/10001",
+  Y: "10001/10001/01010/00100/00100/00100/00100", Z: "11111/00001/00010/00100/01000/10000/11111",
+  0: "01110/10001/10011/10101/11001/10001/01110", 1: "00100/01100/00100/00100/00100/00100/01110",
+  2: "01110/10001/00001/00010/00100/01000/11111", 3: "11110/00001/00001/01110/00001/00001/11110",
+  4: "00010/00110/01010/10010/11111/00010/00010", 5: "11111/10000/10000/11110/00001/00001/11110",
+  6: "01110/10000/10000/11110/10001/10001/01110", 7: "11111/00001/00010/00100/01000/01000/01000",
+  8: "01110/10001/10001/01110/10001/10001/01110", 9: "01110/10001/10001/01111/00001/00001/01110",
+  "-": "00000/00000/00000/11111/00000/00000/00000", ".": "00000/00000/00000/00000/00000/00110/00110",
+  "_": "00000/00000/00000/00000/00000/00000/11111", "?": "01110/10001/00001/00010/00100/00000/00100",
+  " ": "00000/00000/00000/00000/00000/00000/00000"
+};
+
 const state = {
   template: "bevel",
   palette: { ...palettes[0] },
@@ -95,6 +119,260 @@ function alphaPart(value) {
 
 function precise(value) {
   return Number(Number(value).toFixed(2));
+}
+
+function pointString(value) {
+  const number = Math.max(0, Math.min(64, Number(value)));
+  return Number(number.toFixed(3));
+}
+
+function cssPaint(value) {
+  const text = String(value || "none").trim().toLowerCase();
+  if (text === "none") return { color: "none", opacity: 1 };
+  const hex = normalizeHex(text);
+  if (hex) {
+    const alpha = hex.length === 9 ? parseInt(hex.slice(7), 16) / 255 : 1;
+    return { color: hex.slice(0, 7), opacity: alpha };
+  }
+  const match = text.match(/^rgba?\(([^)]+)\)$/);
+  if (match) {
+    const values = match[1].split(/[ ,/]+/).filter(Boolean).map(Number);
+    const color = `#${values.slice(0, 3).map((channel) => Math.max(0, Math.min(255, Math.round(channel))).toString(16).padStart(2, "0")).join("")}`.toUpperCase();
+    return { color, opacity: Number.isFinite(values[3]) ? values[3] : 1 };
+  }
+  return { color: "#000000", opacity: 1 };
+}
+
+function hexPaint(value) {
+  const normalized = normalizeHex(value) || "#000000";
+  return {
+    color: normalized.slice(0, 7),
+    opacity: normalized.length === 9 ? parseInt(normalized.slice(7), 16) / 255 : 1
+  };
+}
+
+function cumulativeOpacity(element) {
+  let opacity = 1;
+  let node = element;
+  while (node instanceof Element && node.tagName.toLowerCase() !== "body") {
+    const own = node.getAttribute("opacity");
+    if (own !== null && Number.isFinite(Number(own))) opacity *= Number(own);
+    node = node.parentElement;
+  }
+  return opacity;
+}
+
+function transformPoint(point, matrix) {
+  return {
+    x: matrix.a * point.x + matrix.c * point.y + matrix.e,
+    y: matrix.b * point.x + matrix.d * point.y + matrix.f
+  };
+}
+
+function closeEnough(a, b, tolerance = .35) {
+  return Math.hypot(a.x - b.x, a.y - b.y) <= tolerance;
+}
+
+function pointsToPath(subpaths, closePath = true) {
+  return subpaths.filter((points) => points.length > 1).map((points) => {
+    const commands = points.map((point, index) => `${index ? "L" : "M"}${pointString(point.x)} ${pointString(point.y)}`);
+    if (closePath && !closeEnough(points[0], points[points.length - 1])) commands.push("Z");
+    else if (closePath) commands.push("Z");
+    return commands.join("");
+  }).join("");
+}
+
+function sampleGeometry(element) {
+  if (typeof element.getTotalLength !== "function" || typeof element.getPointAtLength !== "function" || typeof element.getCTM !== "function") {
+    throw new Error("This browser does not expose SVG geometry APIs required for Unity export.");
+  }
+  const matrix = element.getCTM();
+  if (!matrix) return [];
+  const scale = Math.max(.001, Math.sqrt(Math.abs(matrix.a * matrix.d - matrix.b * matrix.c)));
+  const total = element.getTotalLength();
+  const localStep = Math.max(.08, .22 / scale);
+  const count = Math.max(2, Math.ceil(total / localStep));
+  const subpaths = [];
+  let current = [];
+  let previous = null;
+  for (let index = 0; index <= count; index += 1) {
+    const point = transformPoint(element.getPointAtLength(total * index / count), matrix);
+    if (previous && Math.hypot(point.x - previous.x, point.y - previous.y) > 2.2) {
+      if (current.length > 1) subpaths.push(current);
+      current = [];
+    }
+    current.push(point);
+    previous = point;
+  }
+  if (current.length > 1) subpaths.push(current);
+  return subpaths;
+}
+
+function explicitPath(d, fill, stroke = { color: "none", opacity: 1 }, options = {}) {
+  const hasFill = fill.color !== "none";
+  const hasStroke = stroke.color !== "none";
+  const fillOpacity = hasFill ? precise((fill.opacity ?? 1) * (options.opacity ?? 1) * (options.fillOpacity ?? 1)) : 0;
+  const strokeOpacity = hasStroke ? precise((stroke.opacity ?? 1) * (options.opacity ?? 1) * (options.strokeOpacity ?? 1)) : 0;
+  return `<path d="${d}" fill="${hasFill ? fill.color : "#000000"}" fill-opacity="${fillOpacity}" fill-rule="${options.fillRule || "nonzero"}" stroke="${hasStroke ? stroke.color : "#000000"}" stroke-opacity="${strokeOpacity}" stroke-width="${hasStroke ? options.strokeWidth || 0 : 0}" stroke-linecap="${options.linecap || "butt"}" stroke-linejoin="${options.linejoin || "miter"}" opacity="1"/>`;
+}
+
+function flattenSvg(source) {
+  const host = document.createElement("div");
+  host.setAttribute("aria-hidden", "true");
+  host.style.cssText = "position:fixed;left:-10000px;top:-10000px;width:64px;height:64px;visibility:hidden;pointer-events:none";
+  host.innerHTML = source;
+  document.body.append(host);
+  try {
+    return [...host.querySelectorAll("path,rect,circle,ellipse,line,polyline,polygon")]
+      .filter((element) => !element.closest("defs,clipPath,mask,pattern,symbol"))
+      .map((element) => {
+        const style = getComputedStyle(element);
+        const matrix = element.getCTM();
+        const scale = matrix ? Math.max(.001, Math.sqrt(Math.abs(matrix.a * matrix.d - matrix.b * matrix.c))) : 1;
+        const fill = cssPaint(style.fill);
+        const stroke = cssPaint(style.stroke);
+        const filled = fill.color !== "none";
+        const tag = element.tagName.toLowerCase();
+        const closed = filled || ["rect", "circle", "ellipse", "polygon"].includes(tag) || /z\s*$/i.test(element.getAttribute("d") || "");
+        const subpaths = sampleGeometry(element);
+        return {
+          subpaths,
+          d: pointsToPath(subpaths, closed),
+          fill,
+          stroke,
+          options: {
+            opacity: cumulativeOpacity(element),
+            fillOpacity: Number.isFinite(Number(style.fillOpacity)) ? Number(style.fillOpacity) : 1,
+            strokeOpacity: Number.isFinite(Number(style.strokeOpacity)) ? Number(style.strokeOpacity) : 1,
+            fillRule: style.fillRule === "evenodd" ? "evenodd" : "nonzero",
+            strokeWidth: stroke.color === "none" ? 0 : precise((parseFloat(style.strokeWidth) || 1) * scale),
+            linecap: ["butt", "round", "square"].includes(style.strokeLinecap) ? style.strokeLinecap : "butt",
+            linejoin: ["miter", "round", "bevel"].includes(style.strokeLinejoin) ? style.strokeLinejoin : "miter"
+          }
+        };
+      }).filter((geometry) => geometry.d);
+  } finally {
+    host.remove();
+  }
+}
+
+function clipPolygonBelow(points, minimumY) {
+  if (points.length < 3) return [];
+  const output = [];
+  for (let index = 0; index < points.length; index += 1) {
+    const current = points[index];
+    const previous = points[(index + points.length - 1) % points.length];
+    const currentInside = current.y >= minimumY;
+    const previousInside = previous.y >= minimumY;
+    if (currentInside !== previousInside) {
+      const amount = (minimumY - previous.y) / (current.y - previous.y);
+      output.push({ x: previous.x + (current.x - previous.x) * amount, y: minimumY });
+    }
+    if (currentInside) output.push(current);
+  }
+  return output;
+}
+
+function offsetSubpaths(subpaths, x, y) {
+  return subpaths.map((points) => points.map((point) => ({ x: point.x + x, y: point.y + y })));
+}
+
+function horizontalBounds(subpaths, startY = 48, endY = 57) {
+  let left = 5.5;
+  let right = 58.5;
+  for (let y = startY; y <= endY; y += 1) {
+    const intersections = [];
+    subpaths.forEach((points) => {
+      for (let index = 0; index < points.length; index += 1) {
+        const a = points[index];
+        const b = points[(index + 1) % points.length];
+        if ((a.y <= y && b.y > y) || (b.y <= y && a.y > y)) intersections.push(a.x + (y - a.y) * (b.x - a.x) / (b.y - a.y));
+      }
+    });
+    intersections.sort((a, b) => a - b);
+    for (let index = 0; index + 1 < intersections.length; index += 2) {
+      if (intersections[index] <= 32 && intersections[index + 1] >= 32) {
+        left = Math.max(left, intersections[index]);
+        right = Math.min(right, intersections[index + 1]);
+        break;
+      }
+    }
+  }
+  return { left, right };
+}
+
+function vectorLabelPath(label, bounds) {
+  const characters = label.toUpperCase().slice(0, 18).split("");
+  if (!characters.length) return "";
+  const available = Math.max(8, Math.min(45, bounds.right - bounds.left - 2));
+  const nominalCell = state.textSize / 7;
+  const nominalWidth = characters.length * 5 * nominalCell + Math.max(0, characters.length - 1) * nominalCell;
+  const cell = nominalCell * Math.min(1, available / Math.max(1, nominalWidth));
+  const totalWidth = characters.length * 5 * cell + Math.max(0, characters.length - 1) * cell;
+  const startX = (bounds.left + bounds.right - totalWidth) / 2;
+  const startY = 47.7 + (9 - state.textSize) * .45;
+  const inset = Math.min(.12, cell * .12);
+  const commands = [];
+  characters.forEach((character, characterIndex) => {
+    const rows = (vectorFont[character] || vectorFont["?"]).split("/");
+    rows.forEach((row, rowIndex) => [...row].forEach((pixel, columnIndex) => {
+      if (pixel !== "1") return;
+      const x = startX + characterIndex * 6 * cell + columnIndex * cell + inset;
+      const y = startY + rowIndex * cell + inset;
+      const width = Math.max(.15, cell - inset * 2);
+      commands.push(`M${pointString(x)} ${pointString(y)}h${pointString(width)}v${pointString(width)}h-${pointString(width)}Z`);
+    }));
+  });
+  return commands.join("");
+}
+
+function unityShapeGeometry() {
+  const markup = state.template === "custom" && state.customShape
+    ? shapeContent("body")
+    : `<path d="${shapes[state.template] || shapes.bevel}" fill="#FFFFFF" stroke="none"/>`;
+  const source = `<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64">${markup}</svg>`;
+  return flattenSvg(source);
+}
+
+function unityGlyphPaths() {
+  const size = 30 * state.scale;
+  const x = 32 - size / 2 + state.x;
+  const centerY = state.showText ? 25 : 32;
+  const y = centerY - size / 2 + state.y;
+  const color = normalizeHex(state.palette.glyph) || "#FFFFFF";
+  const source = `<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64"><g color="${color}" fill="currentColor" transform="rotate(${state.rotation} 32 ${centerY})"><svg x="${x}" y="${y}" width="${size}" height="${size}" viewBox="${escapeXml(state.glyph.viewBox)}" fill="currentColor">${state.glyph.markup}</svg></g></svg>`;
+  return flattenSvg(source).map((geometry) => explicitPath(geometry.d, geometry.fill, geometry.stroke, geometry.options)).join("");
+}
+
+function validateUnitySvg(svg) {
+  const forbidden = [/<text\b/i, /<svg\b[^>]*<svg\b/is, /<defs\b/i, /clip-path/i, /currentColor/i, /\btransform=/i, /\bclass=/i, /<style\b/i, /<use\b/i, /<symbol\b/i, /<image\b/i, /preserveAspectRatio/i, /\boverflow=/i];
+  return (svg.match(/<svg\b/gi) || []).length === 1 && !forbidden.some((pattern) => pattern.test(svg));
+}
+
+function buildUnitySvg() {
+  const geometries = unityShapeGeometry();
+  if (!geometries.length) throw new Error("The selected shape has no exportable geometry.");
+  const subpaths = geometries.flatMap((geometry) => geometry.subpaths);
+  const shapePath = pointsToPath(subpaths, true);
+  const shadowPath = pointsToPath(offsetSubpaths(subpaths, .8, .8), true);
+  const background = hexPaint(state.palette.background);
+  const outline = hexPaint(state.palette.outline);
+  const band = hexPaint(state.palette.band);
+  const text = hexPaint(state.palette.text);
+  const bandPath = state.showText && state.textMode === "band"
+    ? pointsToPath(subpaths.map((points) => clipPolygonBelow(points, 45)).filter((points) => points.length > 2), true)
+    : "";
+  const bounds = horizontalBounds(subpaths);
+  const labelPath = state.showText ? vectorLabelPath(state.text.trim(), bounds) : "";
+  const body = explicitPath(shapePath, background);
+  const shadow = explicitPath(shadowPath, { color: "#000000", opacity: .26 });
+  const bandLayer = bandPath ? explicitPath(bandPath, band) : "";
+  const glyph = unityGlyphPaths();
+  const label = labelPath ? explicitPath(labelPath, text) : "";
+  const outlineLayer = state.outlineEnabled ? explicitPath(shapePath, { color: "none", opacity: 1 }, outline, { strokeWidth: 1.5, linejoin: "round" }) : "";
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64">${shadow}${body}${glyph}${bandLayer}${label}${outlineLayer}</svg>`;
+  if (!validateUnitySvg(svg)) throw new Error("Unity SVG validation rejected an unsupported construct.");
+  return svg;
 }
 
 function fileName() {
@@ -407,8 +685,12 @@ function download(name, data, type) {
 }
 
 function exportSvg() {
-  download(`${fileName()}.svg`, buildSvg(), "image/svg+xml;charset=utf-8");
-  notify("SVG 64 × 64 downloaded.");
+  try {
+    download(`${fileName()}.svg`, buildUnitySvg(), "image/svg+xml;charset=utf-8");
+    notify("Unity-compatible SVG 64 × 64 downloaded.");
+  } catch (error) {
+    notify(error.message || "The Unity-compatible SVG could not be generated.");
+  }
 }
 
 function exportPng(size) {
