@@ -18,10 +18,14 @@
 
 Unity Icon Studio keeps the repetitive parts of script icon creation in one place. Pick a shape and palette, find a glyph, adjust it, and export the result without opening a full graphics editor.
 
-- Five vector shapes: Bevel, Rounded, Squircle, Cut corners, and Shield
+- Five built-in vector shapes: Bevel, Rounded, Squircle, Cut corners, and Shield
+- Custom shape import from a filled SVG silhouette
 - Built-in color palettes with manual background, glyph, and outline controls
 - Integrated search across Lucide, Phosphor, and Material Symbols
-- Safe SVG import by file picker or drag and drop
+- Optional labels with a colored band or text-only style
+- Automatic label fitting and clipping so text stays inside the icon
+- Separate band, text, background, glyph, and outline colors
+- Glyph SVG import by file picker or drag and drop
 - Position, scale, and rotation controls
 - Actual-size previews at 64, 48, and 32 pixels
 - SVG export and PNG export at 64, 128, and 256 pixels

@@ -1,16 +1,16 @@
 "use strict";
 
 const palettes = [
-  { name: "Blue", background: "#4D87ED", glyph: "#FFFFFF", outline: "#315DA4" },
-  { name: "Pink", background: "#F34F8C", glyph: "#FFFFFF", outline: "#A92E60" },
-  { name: "Violet", background: "#9362DB", glyph: "#FFFFFF", outline: "#633AA2" },
-  { name: "Red", background: "#ED3454", glyph: "#FFFFFF", outline: "#9F1D35" },
-  { name: "Amber", background: "#F3C744", glyph: "#262719", outline: "#9A7720" },
-  { name: "Slate", background: "#566173", glyph: "#FFFFFF", outline: "#303947" }
+  { name: "Blue", background: "#4D87ED", glyph: "#FFFFFF", outline: "#315DA4", band: "#3C70CE", text: "#FFFFFF" },
+  { name: "Pink", background: "#F34F8C", glyph: "#FFFFFF", outline: "#A92E60", band: "#C53870", text: "#FFFFFF" },
+  { name: "Violet", background: "#9362DB", glyph: "#FFFFFF", outline: "#633AA2", band: "#7448B7", text: "#FFFFFF" },
+  { name: "Red", background: "#ED3454", glyph: "#FFFFFF", outline: "#9F1D35", band: "#C52945", text: "#FFFFFF" },
+  { name: "Amber", background: "#F3C744", glyph: "#262719", outline: "#9A7720", band: "#D2A72D", text: "#262719" },
+  { name: "Slate", background: "#566173", glyph: "#FFFFFF", outline: "#303947", band: "#414B5B", text: "#FFFFFF" }
 ];
 
 const builtIns = [
-  { id: "local:nodes", name: "state", viewBox: "0 0 24 24", markup: '<path d="M6.5 7.5 17.5 6M6.8 8.3l10.4 9.3M18 7.7v8.1" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="5" cy="8" r="3"/><circle cx="19" cy="6" r="3"/><circle cx="18" cy="18" r="3"/>' },
+  { id: "lucide:git-branch", name: "git branch", prefix: "lucide", viewBox: "0 0 24 24", markup: '<path d="M6 3v12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="18" cy="6" r="3" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="6" cy="18" r="3" fill="none" stroke="currentColor" stroke-width="2"/><path d="M18 9a9 9 0 0 1-9 9" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>' },
   { id: "local:gear", name: "system", viewBox: "0 0 24 24", markup: '<path fill-rule="evenodd" d="M9.2 2h5.6l.5 2.2 1.7 1 2.2-.7 2.8 4.8-1.7 1.5v2.4l1.7 1.5-2.8 4.8-2.2-.7-1.7 1-.5 2.2H9.2l-.5-2.2-1.7-1-2.2.7L2 14.7l1.7-1.5v-2.4L2 9.3l2.8-4.8 2.2.7 1.7-1L9.2 2Zm2.8 14a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z"/>' },
   { id: "local:spark", name: "effect", viewBox: "0 0 24 24", markup: '<path d="M12 1.8c.5 4.7 3.5 7.7 8.2 8.2-4.7.5-7.7 3.5-8.2 8.2-.5-4.7-3.5-7.7-8.2-8.2 4.7-.5 7.7-3.5 8.2-8.2ZM19 15.5c.2 2 1.5 3.3 3.5 3.5-2 .2-3.3 1.5-3.5 3.5-.2-2-1.5-3.3-3.5-3.5 2-.2 3.3-1.5 3.5-3.5Z"/>' },
   { id: "local:sword", name: "weapon", viewBox: "0 0 24 24", markup: '<path d="m20.85 2-2.12 7.4-7.35 7.35-2.12-2.12 7.35-7.35L20.85 2ZM8.2 14.57l1.24 1.24-2.13 2.13 1.42 1.42-1.77 1.77-4.09-4.09 1.77-1.77 1.42 1.42 2.14-2.12Z"/>' },
@@ -31,6 +31,14 @@ const aliases = {
   state: "workflow", player: "user", run: "running", machine: "cpu"
 };
 
+const shapes = {
+  bevel: "M12 2.5h32.5l14 14V53a8.5 8.5 0 0 1-8.5 8.5H12A6.5 6.5 0 0 1 5.5 55V9A6.5 6.5 0 0 1 12 2.5Z",
+  rounded: "M13 2.5h38A7.5 7.5 0 0 1 58.5 10v44A7.5 7.5 0 0 1 51 61.5H13A7.5 7.5 0 0 1 5.5 54V10A7.5 7.5 0 0 1 13 2.5Z",
+  squircle: "M19 2.5h26c9 0 13.5 4.5 13.5 13.5v32c0 9-4.5 13.5-13.5 13.5H19C10 61.5 5.5 57 5.5 48V16C5.5 7 10 2.5 19 2.5Z",
+  cut: "M13 2.5h38l7.5 7.5v44L51 61.5H13L5.5 54V10L13 2.5Z",
+  shield: "M6 3h52v31.5C58 48.5 47.5 58 32 62 16.5 58 6 48.5 6 34.5V3Z"
+};
+
 const state = {
   template: "bevel",
   palette: { ...palettes[0] },
@@ -40,7 +48,12 @@ const state = {
   scale: 1,
   rotation: 0,
   source: "all",
-  preview: "grid"
+  preview: "grid",
+  customShape: null,
+  showText: false,
+  text: "ICON",
+  textMode: "band",
+  textSize: 8.75
 };
 
 const searchCache = new Map();
@@ -65,24 +78,50 @@ function iconifyUrl(id) {
   return `https://api.iconify.design/${encodeURIComponent(prefix)}/${encodeURIComponent(nameParts.join(":"))}.svg`;
 }
 
-function templateMarkup() {
-  const p = state.palette;
-  const shapes = {
-    bevel: `M12 2.5h32.5l14 14V53a8.5 8.5 0 0 1-8.5 8.5H12A6.5 6.5 0 0 1 5.5 55V9A6.5 6.5 0 0 1 12 2.5Z`,
-    rounded: `M13 2.5h38A7.5 7.5 0 0 1 58.5 10v44A7.5 7.5 0 0 1 51 61.5H13A7.5 7.5 0 0 1 5.5 54V10A7.5 7.5 0 0 1 13 2.5Z`,
-    squircle: `M19 2.5h26c9 0 13.5 4.5 13.5 13.5v32c0 9-4.5 13.5-13.5 13.5H19C10 61.5 5.5 57 5.5 48V16C5.5 7 10 2.5 19 2.5Z`,
-    cut: `M13 2.5h38l7.5 7.5v44L51 61.5H13L5.5 54V10L13 2.5Z`,
-    shield: `M6 3h52v31.5C58 48.5 47.5 58 32 62 16.5 58 6 48.5 6 34.5V3Z`
-  };
+function customShapeMarkup(color, extraTransform = "", withOutline = false) {
+  if (!state.customShape) return "";
+  const [minX, minY, width, height] = state.customShape.viewBox.split(/[ ,]+/).map(Number);
+  if (![minX, minY, width, height].every(Number.isFinite) || width <= 0 || height <= 0) return "";
+  const scale = Math.min(53 / width, 59 / height);
+  const x = 5.5 + (53 - width * scale) / 2 - minX * scale;
+  const y = 2.5 + (59 - height * scale) / 2 - minY * scale;
+  const outline = withOutline ? `stroke="${state.palette.outline}" stroke-width="${1.5 / scale}" stroke-linejoin="round" paint-order="stroke fill"` : 'stroke="none"';
+  return `<g color="${color}" fill="currentColor" ${outline} transform="${extraTransform} translate(${x} ${y}) scale(${scale})">${state.customShape.markup}</g>`;
+}
+
+function shapeContent(mode = "body") {
+  if (state.template === "custom" && state.customShape) {
+    if (mode === "clip") return customShapeMarkup("#000000");
+    if (mode === "shadow") return customShapeMarkup("#000000");
+    return customShapeMarkup(state.palette.background, "", true);
+  }
   const shape = shapes[state.template] || shapes.bevel;
-  return `<path d="${shape}" fill="#000000" opacity=".26" transform="translate(.8 .8)"/><path d="${shape}" fill="${p.background}" stroke="${p.outline}" stroke-width="1.5" stroke-linejoin="round"/>`;
+  if (mode === "clip") return `<path d="${shape}"/>`;
+  if (mode === "shadow") return `<path d="${shape}" fill="#000000"/>`;
+  return `<path d="${shape}" fill="${state.palette.background}" stroke="${state.palette.outline}" stroke-width="1.5" stroke-linejoin="round"/>`;
+}
+
+function templateMarkup() {
+  return `<g opacity=".26" transform="translate(.8 .8)">${shapeContent("shadow")}</g>${shapeContent("body")}`;
+}
+
+function labelMarkup() {
+  if (!state.showText || !state.text.trim()) return "";
+  const label = state.text.trim().slice(0, 18);
+  const estimatedWidth = Math.max(1, label.length * state.textSize * .62);
+  const scaleX = Math.min(1, 45 / estimatedWidth);
+  const band = state.textMode === "band" ? `<rect class="label-band" x="5" y="45" width="54" height="17" fill="${state.palette.band}" clip-path="url(#shape-clip)"/>` : "";
+  const text = `<text x="32" y="56.4" fill="${state.palette.text}" font-family="Arial,Helvetica,sans-serif" font-size="${state.textSize}" font-weight="800" letter-spacing="-.18" text-anchor="middle">${escapeXml(label)}</text>`;
+  return `${band}<g class="label-text" clip-path="url(#shape-clip)" transform="translate(32 0) scale(${scaleX} 1) translate(-32 0)">${text}</g>`;
 }
 
 function buildSvg() {
   const size = 30 * state.scale;
   const x = 32 - size / 2 + state.x;
   const y = 32 - size / 2 + state.y;
-  return `<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64"><title>${escapeXml(state.glyph.name)} Unity script icon</title>${templateMarkup()}<g color="${state.palette.glyph}" transform="rotate(${state.rotation} 32 32)"><svg x="${x}" y="${y}" width="${size}" height="${size}" viewBox="${escapeXml(state.glyph.viewBox)}" overflow="visible" fill="currentColor" color="${state.palette.glyph}" preserveAspectRatio="xMidYMid meet">${state.glyph.markup}</svg></g></svg>`;
+  const glyphCenter = state.showText ? 25 : 32;
+  const glyphY = glyphCenter - size / 2 + state.y;
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64"><title>${escapeXml(state.glyph.name)} Unity script icon</title><defs><clipPath id="shape-clip">${shapeContent("clip")}</clipPath></defs>${templateMarkup()}<g color="${state.palette.glyph}" transform="rotate(${state.rotation} 32 ${glyphCenter})"><svg x="${x}" y="${glyphY}" width="${size}" height="${size}" viewBox="${escapeXml(state.glyph.viewBox)}" overflow="visible" fill="currentColor" color="${state.palette.glyph}" preserveAspectRatio="xMidYMid meet">${state.glyph.markup}</svg></g>${labelMarkup()}</svg>`;
 }
 
 function render() {
@@ -95,7 +134,7 @@ function render() {
 }
 
 function updateColorControls() {
-  ["background", "glyph", "outline"].forEach((key) => {
+  ["background", "glyph", "outline", "band", "text"].forEach((key) => {
     $(`#color-${key}`).value = state.palette[key];
     $(`#value-${key}`).textContent = state.palette[key];
   });
@@ -106,6 +145,7 @@ function updateRangeOutputs() {
   $("#value-y").textContent = state.y;
   $("#value-scale").textContent = `${Math.round(state.scale * 100)}%`;
   $("#value-rotation").textContent = `${state.rotation}°`;
+  $("#value-text-size").textContent = `${state.textSize}px`;
 }
 
 function renderPalettes() {
@@ -195,6 +235,33 @@ function sanitizeSvg(source) {
   return { viewBox, markup: root.innerHTML };
 }
 
+function sanitizeShapeSvg(source) {
+  const parser = new DOMParser();
+  const documentNode = parser.parseFromString(source, "image/svg+xml");
+  const root = documentNode.documentElement;
+  if (root.tagName.toLowerCase() !== "svg" || documentNode.querySelector("parsererror")) return null;
+  const allowed = new Set(["svg", "g", "path", "circle", "rect", "ellipse", "polygon"]);
+  [...documentNode.querySelectorAll("*")].forEach((node) => {
+    if (!allowed.has(node.tagName.toLowerCase())) {
+      node.remove();
+      return;
+    }
+    [...node.attributes].forEach((attribute) => {
+      const name = attribute.name.toLowerCase();
+      const value = attribute.value.toLowerCase();
+      if (name.startsWith("on") || ["style", "href", "xlink:href", "filter", "mask", "clip-path"].includes(name) || value.includes("url(") || value.includes("javascript:")) {
+        node.removeAttribute(attribute.name);
+      } else if (["fill", "stroke", "color", "opacity"].includes(name)) {
+        node.removeAttribute(attribute.name);
+      }
+    });
+  });
+  const viewBox = root.getAttribute("viewBox") || `0 0 ${parseFloat(root.getAttribute("width")) || 64} ${parseFloat(root.getAttribute("height")) || 64}`;
+  const values = viewBox.split(/[ ,]+/).map(Number);
+  if (values.length !== 4 || !values.every(Number.isFinite) || values[2] <= 0 || values[3] <= 0 || !root.innerHTML.trim()) return null;
+  return { viewBox: values.join(" "), markup: root.innerHTML };
+}
+
 async function selectGlyph(glyph) {
   if (!glyph.remote) {
     state.glyph = glyph;
@@ -240,6 +307,30 @@ async function importSvg(file) {
   $("#selected-source").textContent = "Imported SVG";
   setStatus(`Imported: ${file.name}`);
   render();
+}
+
+async function importShape(file) {
+  if (!file || !file.name.toLowerCase().endsWith(".svg")) {
+    notify("Choose an SVG silhouette.");
+    return;
+  }
+  const parsed = sanitizeShapeSvg(await file.text());
+  if (!parsed) {
+    notify("This shape could not be read. Use a filled SVG silhouette.");
+    return;
+  }
+  state.customShape = { name: file.name.replace(/\.svg$/i, ""), ...parsed };
+  state.template = "custom";
+  const option = $("#custom-shape-option");
+  option.hidden = false;
+  option.querySelector("strong").textContent = state.customShape.name;
+  $$('[data-template]').forEach((button) => {
+    const active = button.dataset.template === "custom";
+    button.classList.toggle("active", active);
+    button.setAttribute("aria-checked", String(active));
+  });
+  render();
+  notify(`Shape imported: ${file.name}`);
 }
 
 function setStatus(message) {
@@ -314,8 +405,19 @@ function resetAll() {
   state.glyph = builtIns[0];
   state.source = "all";
   state.preview = "grid";
+  state.customShape = null;
+  state.showText = false;
+  state.text = "ICON";
+  state.textMode = "band";
+  state.textSize = 8.75;
   resetTransform();
   $("#icon-search").value = "";
+  $("#show-text").checked = false;
+  $("#label-text").value = "ICON";
+  $("#text-size").value = "8.75";
+  $("#text-controls").hidden = true;
+  $("#band-color-row").hidden = false;
+  $("#custom-shape-option").hidden = true;
   $$("[data-template]").forEach((button) => {
     const active = button.dataset.template === "bevel";
     button.classList.toggle("active", active);
@@ -323,6 +425,7 @@ function resetAll() {
   });
   $$("[data-source]").forEach((button) => button.classList.toggle("active", button.dataset.source === "all"));
   $$("[data-preview]").forEach((button) => button.classList.toggle("active", button.dataset.preview === "grid"));
+  $$("[data-text-mode]").forEach((button) => button.classList.toggle("active", button.dataset.textMode === "band"));
   $(".preview-area").classList.remove("light", "dark");
   renderPalettes();
   renderGlyphs(builtIns);
@@ -343,7 +446,7 @@ $("#palette-list").addEventListener("click", (event) => {
   render();
 });
 
-[$("#color-background"), $("#color-glyph"), $("#color-outline")].forEach((input) => {
+[$("#color-background"), $("#color-glyph"), $("#color-outline"), $("#color-band"), $("#color-text")].forEach((input) => {
   input.addEventListener("input", () => {
     const key = input.id.replace("color-", "");
     state.palette = { ...state.palette, name: "Custom", [key]: input.value.toUpperCase() };
@@ -417,6 +520,32 @@ $("#import-button").addEventListener("click", () => $("#file-input").click());
 $("#file-input").addEventListener("change", (event) => {
   importSvg(event.target.files?.[0]);
   event.target.value = "";
+});
+$("#import-shape-button").addEventListener("click", () => $("#shape-file-input").click());
+$("#shape-file-input").addEventListener("change", (event) => {
+  importShape(event.target.files?.[0]);
+  event.target.value = "";
+});
+$("#show-text").addEventListener("change", (event) => {
+  state.showText = event.target.checked;
+  $("#text-controls").hidden = !state.showText;
+  render();
+});
+$("#label-text").addEventListener("input", (event) => {
+  state.text = event.target.value;
+  render();
+});
+$("#text-mode").addEventListener("click", (event) => {
+  const button = event.target.closest("[data-text-mode]");
+  if (!button) return;
+  state.textMode = button.dataset.textMode;
+  $$("[data-text-mode]").forEach((item) => item.classList.toggle("active", item === button));
+  $("#band-color-row").hidden = state.textMode !== "band";
+  render();
+});
+$("#text-size").addEventListener("input", (event) => {
+  state.textSize = Number(event.target.value);
+  render();
 });
 $("#reset-transform").addEventListener("click", resetTransform);
 $("#reset-all").addEventListener("click", resetAll);

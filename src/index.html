@@ -7,8 +7,8 @@
     <meta name="theme-color" content="#0D0F12" />
     <title>Unity Icon Studio</title>
     <link rel="icon" href="./assets/icon.svg" type="image/svg+xml" />
-    <link rel="stylesheet" href="./css/styles.css?v=3" />
-    <script src="./js/app.js?v=3" defer></script>
+    <link rel="stylesheet" href="./css/styles.css?v=4" />
+    <script src="./js/app.js?v=4" defer></script>
   </head>
   <body>
     <header class="app-header">
@@ -26,7 +26,8 @@
     <main class="studio">
       <aside class="controls" aria-label="Icon settings">
         <section class="control-block">
-          <div class="section-heading"><div><span class="eyebrow">01</span><h2>Shape</h2></div><span>64 × 64</span></div>
+          <div class="section-heading"><div><span class="eyebrow">01</span><h2>Shape</h2></div><button class="link-button" id="import-shape-button" type="button">Import shape</button></div>
+          <input id="shape-file-input" type="file" accept="image/svg+xml,.svg" hidden />
           <div class="template-picker" role="radiogroup" aria-label="Icon shape">
             <button class="template-option active" data-template="bevel" role="radio" aria-checked="true" type="button">
               <svg viewBox="0 0 32 36" aria-hidden="true"><path d="M7 2.5h14l8 8V29a4.5 4.5 0 0 1-4.5 4.5H7A4.5 4.5 0 0 1 2.5 29V7A4.5 4.5 0 0 1 7 2.5Z"/></svg>
@@ -44,9 +45,13 @@
               <svg viewBox="0 0 32 36" aria-hidden="true"><path d="M7 2.5h18l4 4v23l-4 4H7l-4-4v-23l4-4Z"/></svg>
               <span><strong>Cut corners</strong><small>Angular</small></span>
             </button>
-            <button class="template-option" data-template="shield" role="radio" aria-checked="false" type="button">
+            <button class="template-option wide" data-template="shield" role="radio" aria-checked="false" type="button">
               <svg viewBox="0 0 32 36" aria-hidden="true"><path d="M3 3h26v17c0 7-5.5 11.5-13 13.5C8.5 31.5 3 27 3 20V3Z"/></svg>
               <span><strong>Shield</strong><small>Badge</small></span>
+            </button>
+            <button class="template-option wide" id="custom-shape-option" data-template="custom" role="radio" aria-checked="false" type="button" hidden>
+              <svg viewBox="0 0 32 36" aria-hidden="true"><path d="M7 3h18l4 9-3 19-10 3-11-7-2-14 4-10Z"/></svg>
+              <span><strong>Custom shape</strong><small>Imported SVG</small></span>
             </button>
           </div>
         </section>
@@ -79,8 +84,31 @@
           <div class="results-footer"><span id="results-info">Quick picks</span><span id="selected-source">Built-in glyph</span></div>
         </section>
 
+        <section class="control-block text-section">
+          <div class="section-heading">
+            <div><span class="eyebrow">04</span><h2>Label</h2></div>
+            <label class="toggle"><input id="show-text" type="checkbox" /><span aria-hidden="true"></span><b>Show text</b></label>
+          </div>
+          <div class="text-controls" id="text-controls" hidden>
+            <label class="field-label" for="label-text">Text</label>
+            <input class="text-input" id="label-text" type="text" value="ICON" maxlength="18" autocomplete="off" spellcheck="false" />
+            <div class="segmented" id="text-mode" role="radiogroup" aria-label="Label style">
+              <button class="active" data-text-mode="band" type="button">With band</button>
+              <button data-text-mode="plain" type="button">Text only</button>
+            </div>
+            <div class="range-list compact">
+              <label><span>Text size <output id="value-text-size">8.75px</output></span><input id="text-size" type="range" min="6" max="12" step="0.25" value="8.75" /></label>
+            </div>
+            <div class="color-list compact-colors">
+              <label id="band-color-row"><span>Band</span><span class="color-field"><input id="color-band" type="color" /><output id="value-band"></output></span></label>
+              <label><span>Text</span><span class="color-field"><input id="color-text" type="color" /><output id="value-text"></output></span></label>
+            </div>
+            <p class="control-note">Long labels are fitted and clipped inside the selected shape.</p>
+          </div>
+        </section>
+
         <details class="control-block adjustments" open>
-          <summary><span><span class="eyebrow">04</span><strong>Adjust glyph</strong></span><svg viewBox="0 0 20 20" aria-hidden="true"><path d="m6 8 4 4 4-4"/></svg></summary>
+          <summary><span><span class="eyebrow">05</span><strong>Adjust glyph</strong></span><svg viewBox="0 0 20 20" aria-hidden="true"><path d="m6 8 4 4 4-4"/></svg></summary>
           <div class="range-list">
             <label><span>Position X <output id="value-x">0</output></span><input id="glyph-x" type="range" min="-16" max="16" value="0" /></label>
             <label><span>Position Y <output id="value-y">0</output></span><input id="glyph-y" type="range" min="-16" max="16" value="0" /></label>
@@ -91,7 +119,7 @@
         </details>
 
         <section class="control-block export-block">
-          <div class="section-heading"><div><span class="eyebrow">05</span><h2>Export</h2></div></div>
+          <div class="section-heading"><div><span class="eyebrow">06</span><h2>Export</h2></div></div>
           <div class="export-grid">
             <button class="button primary" id="export-svg" type="button">SVG 64</button>
             <button class="button secondary" data-png="64" type="button">PNG 64</button>
