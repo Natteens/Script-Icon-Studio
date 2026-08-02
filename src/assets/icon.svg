@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64">
+  <title>Unity Icon Studio</title>
+  <path d="M12 4h32.5l14 14v35A8.5 8.5 0 0 1 50 61.5H12A6.5 6.5 0 0 1 5.5 55V10.5A6.5 6.5 0 0 1 12 4Z" fill="#000" opacity=".28"/>
+  <path d="M12 2.5h32.5l14 14V53A8.5 8.5 0 0 1 50 61.5H12A6.5 6.5 0 0 1 5.5 55V9A6.5 6.5 0 0 1 12 2.5Z" fill="#4D87ED" stroke="#315DA4" stroke-width="1.5" stroke-linejoin="round"/>
+  <path d="M5.5 46h53v7A8.5 8.5 0 0 1 50 61.5H12A6.5 6.5 0 0 1 5.5 55v-9Z" fill="#3C70CE"/>
+  <path d="M20 16.5 42 20M20.8 18.4 36.5 34M42 22v9.5" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round"/>
+  <circle cx="18.5" cy="16.5" r="4" fill="#fff"/><circle cx="43.5" cy="20" r="4" fill="#fff"/><circle cx="37" cy="35" r="4" fill="#fff"/>
+  <text x="32" y="56.5" fill="#fff" font-family="Arial,sans-serif" font-size="8.8" font-weight="800" letter-spacing="-.25" text-anchor="middle">ICON</text>
+</svg>

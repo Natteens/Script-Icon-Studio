@@ -1,55 +1,70 @@
-# Unity Icon Studio
+<p align="center">
+  <img src="src/assets/icon.svg" width="104" alt="Unity Icon Studio logo">
+</p>
 
-Um editor pequeno para montar ícones de scripts da Unity sem precisar abrir um programa de desenho toda vez.
+<h1 align="center">Unity Icon Studio</h1>
 
-O resultado é um SVG 64 × 64. Você escolhe o formato, as cores e o glyph; depois pode centralizar, redimensionar, girar e exportar em SVG ou PNG.
+<p align="center">
+  A small browser editor for building consistent 64 × 64 Unity script icons.
+</p>
 
-## O que dá para fazer
+<p align="center">
+  <a href="https://natteens.github.io/unity-icon-studio/"><strong>Open the editor</strong></a>
+  ·
+  <a href="https://github.com/Natteens/unity-icon-studio/actions/workflows/pages.yml">Deployment status</a>
+</p>
 
-- usar um ícone sem dobra ou a variação de arquivo com dobra;
-- aplicar paletas prontas ou escolher cada cor manualmente;
-- buscar glyphs de Lucide, Phosphor e Material Symbols dentro do próprio editor;
-- importar um SVG do computador arrastando o arquivo para a página;
-- ajustar posição, tamanho e rotação do glyph;
-- conferir o resultado nos tamanhos 64, 48 e 32 pixels;
-- exportar SVG 64 × 64 ou PNG em 64, 128 e 256 pixels.
+## What it does
 
-Não há servidor de edição. As alterações e exportações são feitas no navegador. Apenas a busca de glyphs consulta a API pública do Iconify.
+Unity Icon Studio keeps the repetitive parts of script icon creation in one place. Pick a shape and palette, find a glyph, adjust it, and export the result without opening a full graphics editor.
 
-## Rodando localmente
+- Five vector shapes: Bevel, Rounded, Squircle, Cut corners, and Shield
+- Built-in color palettes with manual background, glyph, and outline controls
+- Integrated search across Lucide, Phosphor, and Material Symbols
+- Safe SVG import by file picker or drag and drop
+- Position, scale, and rotation controls
+- Actual-size previews at 64, 48, and 32 pixels
+- SVG export and PNG export at 64, 128, and 256 pixels
+- No application server, account, build step, or runtime dependency
 
-Não é necessário instalar Node.js nem dependências. Qualquer servidor de arquivos estáticos serve:
+Editing and export happen locally in the browser. Only glyph search sends a request, using the public Iconify API.
+
+## Run locally
+
+The project is plain HTML, CSS, and JavaScript. Start any static file server from the repository root:
 
 ```bash
-python -m http.server 8080 -d site
+python -m http.server 8080 -d src
 ```
 
-Depois abra `http://localhost:8080`.
+Then open `http://localhost:8080`.
 
-Abrir o HTML diretamente também funciona para a maior parte do editor, mas um servidor local evita limitações do navegador na busca de ícones.
-
-## Estrutura
+## Project structure
 
 ```text
-site/
-├── index.html   # interface
-├── styles.css   # layout e aparência
-├── app.js       # editor, busca e exportação
-└── favicon.svg
+src/
+├── assets/
+│   └── icon.svg
+├── css/
+│   └── styles.css
+├── js/
+│   └── app.js
+├── .nojekyll
+└── index.html
 ```
 
-O workflow `.github/workflows/pages.yml` publica a pasta `site` no GitHub Pages a cada push na branch `main`.
+GitHub Pages publishes the `src` directory after every push to `main`. The workflow contains no install or build phase because the source is already deployable.
 
-## Glyphs e licenças
+## Glyph sources
 
-A busca usa a API pública do [Iconify](https://iconify.design/docs/api/) e está limitada a estas coleções:
+Search results come from the public [Iconify API](https://iconify.design/docs/api/) and are restricted to:
 
-- [Lucide](https://lucide.dev/license) — ISC;
-- [Phosphor](https://github.com/phosphor-icons/core) — MIT;
-- [Material Symbols](https://github.com/google/material-design-icons) — Apache 2.0.
+- [Lucide](https://lucide.dev/license) — ISC
+- [Phosphor](https://github.com/phosphor-icons/core) — MIT
+- [Material Symbols](https://github.com/google/material-design-icons) — Apache 2.0
 
-SVGs importados continuam sujeitos à licença do arquivo original. Antes de distribuir um pacote de ícones, confira se a licença da coleção escolhida atende ao seu uso.
+Imported SVGs retain their original licenses. Check the selected collection's terms before distributing an icon pack.
 
-## Atalho
+## Keyboard shortcut
 
-`Ctrl + S` (ou `Cmd + S`) baixa o SVG atual.
+Press `Ctrl + S` or `Cmd + S` to download the current SVG.

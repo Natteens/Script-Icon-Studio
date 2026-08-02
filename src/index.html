@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="Create consistent 64 × 64 icons for Unity scripts." />
+    <meta name="theme-color" content="#0D0F12" />
+    <title>Unity Icon Studio</title>
+    <link rel="icon" href="./assets/icon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="./css/styles.css?v=3" />
+    <script src="./js/app.js?v=3" defer></script>
+  </head>
+  <body>
+    <header class="app-header">
+      <a class="brand" href="./" aria-label="Unity Icon Studio home">
+        <img src="./assets/icon.svg" alt="" />
+        <span><strong>Unity Icon Studio</strong><small>Script icon editor</small></span>
+      </a>
+      <div class="header-actions">
+        <span class="status" id="status" role="status">Ready</span>
+        <button class="button secondary" id="reset-all" type="button">Reset</button>
+        <button class="button primary" id="export-svg-top" type="button">Download SVG</button>
+      </div>
+    </header>
+
+    <main class="studio">
+      <aside class="controls" aria-label="Icon settings">
+        <section class="control-block">
+          <div class="section-heading"><div><span class="eyebrow">01</span><h2>Shape</h2></div><span>64 × 64</span></div>
+          <div class="template-picker" role="radiogroup" aria-label="Icon shape">
+            <button class="template-option active" data-template="bevel" role="radio" aria-checked="true" type="button">
+              <svg viewBox="0 0 32 36" aria-hidden="true"><path d="M7 2.5h14l8 8V29a4.5 4.5 0 0 1-4.5 4.5H7A4.5 4.5 0 0 1 2.5 29V7A4.5 4.5 0 0 1 7 2.5Z"/></svg>
+              <span><strong>Bevel</strong><small>Default</small></span>
+            </button>
+            <button class="template-option" data-template="rounded" role="radio" aria-checked="false" type="button">
+              <svg viewBox="0 0 32 36" aria-hidden="true"><rect x="3" y="2.5" width="26" height="31" rx="5"/></svg>
+              <span><strong>Rounded</strong><small>Classic</small></span>
+            </button>
+            <button class="template-option" data-template="squircle" role="radio" aria-checked="false" type="button">
+              <svg viewBox="0 0 32 36" aria-hidden="true"><rect x="3" y="2.5" width="26" height="31" rx="9"/></svg>
+              <span><strong>Squircle</strong><small>Soft</small></span>
+            </button>
+            <button class="template-option" data-template="cut" role="radio" aria-checked="false" type="button">
+              <svg viewBox="0 0 32 36" aria-hidden="true"><path d="M7 2.5h18l4 4v23l-4 4H7l-4-4v-23l4-4Z"/></svg>
+              <span><strong>Cut corners</strong><small>Angular</small></span>
+            </button>
+            <button class="template-option" data-template="shield" role="radio" aria-checked="false" type="button">
+              <svg viewBox="0 0 32 36" aria-hidden="true"><path d="M3 3h26v17c0 7-5.5 11.5-13 13.5C8.5 31.5 3 27 3 20V3Z"/></svg>
+              <span><strong>Shield</strong><small>Badge</small></span>
+            </button>
+          </div>
+        </section>
+
+        <section class="control-block">
+          <div class="section-heading"><div><span class="eyebrow">02</span><h2>Colors</h2></div><span id="palette-name">Blue</span></div>
+          <div class="palette-list" id="palette-list" aria-label="Color palettes"></div>
+          <div class="color-list">
+            <label><span>Background</span><span class="color-field"><input id="color-background" type="color" /><output id="value-background"></output></span></label>
+            <label><span>Glyph</span><span class="color-field"><input id="color-glyph" type="color" /><output id="value-glyph"></output></span></label>
+            <label><span>Outline</span><span class="color-field"><input id="color-outline" type="color" /><output id="value-outline"></output></span></label>
+          </div>
+        </section>
+
+        <section class="control-block glyph-section">
+          <div class="section-heading"><div><span class="eyebrow">03</span><h2>Glyph</h2></div><button class="link-button" id="import-button" type="button">Import SVG</button></div>
+          <input id="file-input" type="file" accept="image/svg+xml,.svg" hidden />
+          <form class="search-box" id="search-form" role="search">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m16 16 4 4"/></svg>
+            <input id="icon-search" type="search" autocomplete="off" placeholder="Search weapon, sound, player…" aria-label="Search glyphs" />
+            <span class="search-spinner" id="search-spinner" hidden></span>
+          </form>
+          <div class="source-filter" id="source-filter" role="radiogroup" aria-label="Icon library">
+            <button class="active" data-source="all" type="button">All</button>
+            <button data-source="lucide" type="button">Lucide</button>
+            <button data-source="ph" type="button">Phosphor</button>
+            <button data-source="material-symbols" type="button">Material</button>
+          </div>
+          <div class="glyph-results" id="glyph-results" aria-live="polite"></div>
+          <div class="results-footer"><span id="results-info">Quick picks</span><span id="selected-source">Built-in glyph</span></div>
+        </section>
+
+        <details class="control-block adjustments" open>
+          <summary><span><span class="eyebrow">04</span><strong>Adjust glyph</strong></span><svg viewBox="0 0 20 20" aria-hidden="true"><path d="m6 8 4 4 4-4"/></svg></summary>
+          <div class="range-list">
+            <label><span>Position X <output id="value-x">0</output></span><input id="glyph-x" type="range" min="-16" max="16" value="0" /></label>
+            <label><span>Position Y <output id="value-y">0</output></span><input id="glyph-y" type="range" min="-16" max="16" value="0" /></label>
+            <label><span>Size <output id="value-scale">100%</output></span><input id="glyph-scale" type="range" min="50" max="160" value="100" /></label>
+            <label><span>Rotation <output id="value-rotation">0°</output></span><input id="glyph-rotation" type="range" min="-180" max="180" value="0" /></label>
+          </div>
+          <button class="text-action" id="reset-transform" type="button">Center glyph</button>
+        </details>
+
+        <section class="control-block export-block">
+          <div class="section-heading"><div><span class="eyebrow">05</span><h2>Export</h2></div></div>
+          <div class="export-grid">
+            <button class="button primary" id="export-svg" type="button">SVG 64</button>
+            <button class="button secondary" data-png="64" type="button">PNG 64</button>
+            <button class="button secondary" data-png="128" type="button">PNG 128</button>
+            <button class="button secondary" data-png="256" type="button">PNG 256</button>
+          </div>
+        </section>
+      </aside>
+
+      <section class="preview-area" aria-label="Icon preview">
+        <div class="preview-toolbar">
+          <div class="background-switch" id="background-switch" role="radiogroup" aria-label="Preview background">
+            <button class="active" data-preview="grid" type="button">Grid</button>
+            <button data-preview="light" type="button">Light</button>
+            <button data-preview="dark" type="button">Dark</button>
+          </div>
+          <span>VECTOR PREVIEW</span>
+        </div>
+        <div class="drop-hint" id="drop-hint">Drop an SVG to import it</div>
+        <div class="artboard">
+          <div class="main-icon" id="main-icon"></div>
+          <div class="actual-sizes" aria-label="Actual sizes">
+            <div><span class="size-icon size-64"></span><small>64</small></div>
+            <div><span class="size-icon size-48"></span><small>48</small></div>
+            <div><span class="size-icon size-32"></span><small>32</small></div>
+          </div>
+        </div>
+        <p class="privacy-note">Editing and export stay in your browser. Only glyph search uses the network.</p>
+      </section>
+    </main>
+
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  </body>
+</html>

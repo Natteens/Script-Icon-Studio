@@ -1,12 +1,12 @@
 "use strict";
 
 const palettes = [
-  { name: "Branco", background: "#F6F6F2", glyph: "#242722", outline: "#9B9E96", fold: "#FFFFFF" },
-  { name: "Azul", background: "#4D87ED", glyph: "#FFFFFF", outline: "#315DA4", fold: "#7AA6F2" },
-  { name: "Rosa", background: "#F34F8C", glyph: "#FFFFFF", outline: "#A92E60", fold: "#F77AAA" },
-  { name: "Roxo", background: "#9362DB", glyph: "#FFFFFF", outline: "#633AA2", fold: "#B48AEB" },
-  { name: "Vermelho", background: "#ED3454", glyph: "#FFFFFF", outline: "#9F1D35", fold: "#F16B82" },
-  { name: "Amarelo", background: "#F3C744", glyph: "#262719", outline: "#9A7720", fold: "#FFE17D" }
+  { name: "Blue", background: "#4D87ED", glyph: "#FFFFFF", outline: "#315DA4" },
+  { name: "Pink", background: "#F34F8C", glyph: "#FFFFFF", outline: "#A92E60" },
+  { name: "Violet", background: "#9362DB", glyph: "#FFFFFF", outline: "#633AA2" },
+  { name: "Red", background: "#ED3454", glyph: "#FFFFFF", outline: "#9F1D35" },
+  { name: "Amber", background: "#F3C744", glyph: "#262719", outline: "#9A7720" },
+  { name: "Slate", background: "#566173", glyph: "#FFFFFF", outline: "#303947" }
 ];
 
 const builtIns = [
@@ -27,13 +27,12 @@ const sources = {
 };
 
 const aliases = {
-  arma: "sword", weapon: "sword", espada: "sword", som: "sound", audio: "speaker", pasta: "folder",
-  estado: "state", alvo: "target", jogador: "player", efeito: "sparkles", correr: "run",
-  controle: "controller", máquina: "machine", maquina: "machine", câmera: "camera", camera: "camera"
+  weapon: "sword", audio: "speaker", system: "settings", effect: "sparkles",
+  state: "workflow", player: "user", run: "running", machine: "cpu"
 };
 
 const state = {
-  template: "clean",
+  template: "bevel",
   palette: { ...palettes[0] },
   glyph: builtIns[0],
   x: 0,
@@ -68,10 +67,15 @@ function iconifyUrl(id) {
 
 function templateMarkup() {
   const p = state.palette;
-  if (state.template === "folded") {
-    return `<path d="M12.5 4H43.3L60 20.7v30.8A9.5 9.5 0 0 1 50.5 61H12.5A9.5 9.5 0 0 1 3 51.5v-38A9.5 9.5 0 0 1 12.5 4Z" fill="#111710" opacity=".16"/><path d="M12.5 2.5h31L61.5 20.5v30A10.5 10.5 0 0 1 51 61H13A10.5 10.5 0 0 1 2.5 50.5V13A10.5 10.5 0 0 1 13 2.5Z" fill="${p.background}" stroke="${p.outline}" stroke-width="1.5" stroke-linejoin="round"/><path d="M43.5 2.5v10.8a7.2 7.2 0 0 0 7.2 7.2h10.8l-18-18Z" fill="${p.fold}" stroke="${p.outline}" stroke-width="1.5" stroke-linejoin="round"/>`;
-  }
-  return `<rect x="3.8" y="4.2" width="57.2" height="57.2" rx="11" fill="#111710" opacity=".16"/><rect x="2.5" y="2.5" width="58.5" height="58.5" rx="11" fill="${p.background}" stroke="${p.outline}" stroke-width="1.5"/>`;
+  const shapes = {
+    bevel: `M12 2.5h32.5l14 14V53a8.5 8.5 0 0 1-8.5 8.5H12A6.5 6.5 0 0 1 5.5 55V9A6.5 6.5 0 0 1 12 2.5Z`,
+    rounded: `M13 2.5h38A7.5 7.5 0 0 1 58.5 10v44A7.5 7.5 0 0 1 51 61.5H13A7.5 7.5 0 0 1 5.5 54V10A7.5 7.5 0 0 1 13 2.5Z`,
+    squircle: `M19 2.5h26c9 0 13.5 4.5 13.5 13.5v32c0 9-4.5 13.5-13.5 13.5H19C10 61.5 5.5 57 5.5 48V16C5.5 7 10 2.5 19 2.5Z`,
+    cut: `M13 2.5h38l7.5 7.5v44L51 61.5H13L5.5 54V10L13 2.5Z`,
+    shield: `M6 3h52v31.5C58 48.5 47.5 58 32 62 16.5 58 6 48.5 6 34.5V3Z`
+  };
+  const shape = shapes[state.template] || shapes.bevel;
+  return `<path d="${shape}" fill="#000000" opacity=".26" transform="translate(.8 .8)"/><path d="${shape}" fill="${p.background}" stroke="${p.outline}" stroke-width="1.5" stroke-linejoin="round"/>`;
 }
 
 function buildSvg() {
@@ -86,13 +90,12 @@ function render() {
   $("#main-icon").innerHTML = svg;
   $$(".size-icon").forEach((node) => { node.innerHTML = svg; });
   $("#palette-name").textContent = state.palette.name;
-  $("#fold-color-row").hidden = state.template !== "folded";
   updateColorControls();
   updateRangeOutputs();
 }
 
 function updateColorControls() {
-  ["background", "glyph", "outline", "fold"].forEach((key) => {
+  ["background", "glyph", "outline"].forEach((key) => {
     $(`#color-${key}`).value = state.palette[key];
     $(`#value-${key}`).textContent = state.palette[key];
   });
@@ -106,22 +109,22 @@ function updateRangeOutputs() {
 }
 
 function renderPalettes() {
-  $("#palette-list").innerHTML = palettes.map((palette, index) => `<button class="palette-swatch${index === 0 ? " active" : ""}" data-palette="${index}" type="button" title="${palette.name}" aria-label="Paleta ${palette.name}" style="background:${palette.background}"></button>`).join("");
+  $("#palette-list").innerHTML = palettes.map((palette, index) => `<button class="palette-swatch${index === 0 ? " active" : ""}" data-palette="${index}" type="button" title="${palette.name}" aria-label="${palette.name} palette" style="background:${palette.background}"></button>`).join("");
 }
 
 function glyphPreview(glyph) {
   if (glyph.remote) {
-    return `<img src="${iconifyUrl(glyph.id)}?color=%23343731" alt="" loading="lazy" />`;
+    return `<img src="${iconifyUrl(glyph.id)}?color=%23D9DEE8" alt="" loading="lazy" />`;
   }
   return `<svg viewBox="${glyph.viewBox}" fill="currentColor" color="currentColor" aria-hidden="true">${glyph.markup}</svg>`;
 }
 
-function renderGlyphs(glyphs, label = "Atalhos locais") {
+function renderGlyphs(glyphs, label = "Quick picks") {
   const results = $("#glyph-results");
   if (!glyphs.length) {
-    results.innerHTML = '<div class="glyph-empty">Nenhum glyph encontrado. Tente outro termo em inglês ou português.</div>';
+    results.innerHTML = '<div class="glyph-empty">No glyphs found. Try another search term.</div>';
   } else {
-    results.innerHTML = glyphs.map((glyph) => `<button class="glyph-button${state.glyph.id === glyph.id ? " active" : ""}" data-glyph="${escapeXml(glyph.id)}" type="button" title="${escapeXml(glyph.name)}" aria-label="Usar ${escapeXml(glyph.name)}">${glyphPreview(glyph)}</button>`).join("");
+    results.innerHTML = glyphs.map((glyph) => `<button class="glyph-button${state.glyph.id === glyph.id ? " active" : ""}" data-glyph="${escapeXml(glyph.id)}" type="button" title="${escapeXml(glyph.name)}" aria-label="Use ${escapeXml(glyph.name)}">${glyphPreview(glyph)}</button>`).join("");
   }
   $("#results-info").textContent = label;
 }
@@ -140,7 +143,7 @@ async function searchIcons(rawQuery) {
   const prefixes = state.source === "all" ? Object.keys(sources).join(",") : state.source;
   const cacheKey = `${prefixes}:${query}`;
   if (searchCache.has(cacheKey)) {
-    renderGlyphs(searchCache.get(cacheKey), `Resultados para “${rawQuery.trim()}”`);
+    renderGlyphs(searchCache.get(cacheKey), `Results for “${rawQuery.trim()}”`);
     return;
   }
   searchController?.abort();
@@ -156,11 +159,11 @@ async function searchIcons(rawQuery) {
       return { id, name: nameParts.join(":"), prefix, remote: true };
     });
     searchCache.set(cacheKey, glyphs);
-    renderGlyphs(glyphs, `${glyphs.length} resultados para “${rawQuery.trim()}”`);
+    renderGlyphs(glyphs, `${glyphs.length} results for “${rawQuery.trim()}”`);
   } catch (error) {
     if (error.name !== "AbortError") {
-      renderGlyphs([], "Busca indisponível");
-      notify("Não foi possível consultar os glyphs agora.");
+      renderGlyphs([], "Search unavailable");
+      notify("The glyph catalog is unavailable right now.");
     }
   } finally {
     $("#search-spinner").hidden = true;
@@ -210,13 +213,13 @@ async function selectGlyph(glyph) {
     state.glyph = { ...glyph, ...parsed };
     glyphSelected(state.glyph);
   } catch {
-    notify("Não foi possível carregar esse glyph.");
+    notify("This glyph could not be loaded.");
   }
 }
 
 function glyphSelected(glyph) {
   $$(".glyph-button").forEach((button) => button.classList.toggle("active", button.dataset.glyph === glyph.id));
-  const source = glyph.prefix && sources[glyph.prefix] ? sources[glyph.prefix].label : "Glyph próprio";
+  const source = glyph.prefix && sources[glyph.prefix] ? sources[glyph.prefix].label : "Built-in glyph";
   $("#selected-source").textContent = source;
   setStatus(`Glyph: ${glyph.name}`);
   render();
@@ -224,18 +227,18 @@ function glyphSelected(glyph) {
 
 async function importSvg(file) {
   if (!file || !file.name.toLowerCase().endsWith(".svg")) {
-    notify("Escolha um arquivo SVG.");
+    notify("Choose an SVG file.");
     return;
   }
   const parsed = sanitizeSvg(await file.text());
   if (!parsed) {
-    notify("Esse SVG não pôde ser lido.");
+    notify("This SVG could not be read.");
     return;
   }
   const name = file.name.replace(/\.svg$/i, "");
   state.glyph = { id: `custom:${name}`, name, ...parsed };
-  $("#selected-source").textContent = "SVG importado";
-  setStatus(`Importado: ${file.name}`);
+  $("#selected-source").textContent = "Imported SVG";
+  setStatus(`Imported: ${file.name}`);
   render();
 }
 
@@ -265,7 +268,7 @@ function download(name, data, type) {
 
 function exportSvg() {
   download(`${fileName()}.svg`, buildSvg(), "image/svg+xml;charset=utf-8");
-  notify("SVG 64 × 64 baixado.");
+  notify("SVG 64 × 64 downloaded.");
 }
 
 function exportPng(size) {
@@ -283,11 +286,11 @@ function exportPng(size) {
       if (blob) download(`${fileName()}-${size}.png`, blob, "image/png");
     }, "image/png");
     URL.revokeObjectURL(source);
-    notify(`PNG ${size} × ${size} baixado.`);
+    notify(`PNG ${size} × ${size} downloaded.`);
   };
   image.onerror = () => {
     URL.revokeObjectURL(source);
-    notify("Não foi possível gerar o PNG.");
+    notify("The PNG could not be generated.");
   };
   image.src = source;
 }
@@ -302,11 +305,11 @@ function resetTransform() {
   $("#glyph-scale").value = 100;
   $("#glyph-rotation").value = 0;
   render();
-  setStatus("Glyph centralizado");
+  setStatus("Glyph centered");
 }
 
 function resetAll() {
-  state.template = "clean";
+  state.template = "bevel";
   state.palette = { ...palettes[0] };
   state.glyph = builtIns[0];
   state.source = "all";
@@ -314,7 +317,7 @@ function resetAll() {
   resetTransform();
   $("#icon-search").value = "";
   $$("[data-template]").forEach((button) => {
-    const active = button.dataset.template === "clean";
+    const active = button.dataset.template === "bevel";
     button.classList.toggle("active", active);
     button.setAttribute("aria-checked", String(active));
   });
@@ -324,7 +327,7 @@ function resetAll() {
   renderPalettes();
   renderGlyphs(builtIns);
   glyphSelected(state.glyph);
-  notify("Editor restaurado.");
+  notify("Editor reset.");
 }
 
 renderPalettes();
@@ -340,10 +343,10 @@ $("#palette-list").addEventListener("click", (event) => {
   render();
 });
 
-[$("#color-background"), $("#color-glyph"), $("#color-outline"), $("#color-fold")].forEach((input) => {
+[$("#color-background"), $("#color-glyph"), $("#color-outline")].forEach((input) => {
   input.addEventListener("input", () => {
     const key = input.id.replace("color-", "");
-    state.palette = { ...state.palette, name: "Personalizada", [key]: input.value.toUpperCase() };
+    state.palette = { ...state.palette, name: "Custom", [key]: input.value.toUpperCase() };
     $$(".palette-swatch").forEach((item) => item.classList.remove("active"));
     render();
   });
