@@ -27,7 +27,7 @@ const sources = {
 };
 
 const aliases = {
-  arma: "weapon", espada: "sword", som: "sound", audio: "speaker", pasta: "folder",
+  arma: "sword", weapon: "sword", espada: "sword", som: "sound", audio: "speaker", pasta: "folder",
   estado: "state", alvo: "target", jogador: "player", efeito: "sparkles", correr: "run",
   controle: "controller", máquina: "machine", maquina: "machine", câmera: "camera", camera: "camera"
 };
