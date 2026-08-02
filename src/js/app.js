@@ -10,7 +10,7 @@ const palettes = [
 ];
 
 const builtIns = [
-  { id: "lucide:git-branch", name: "git branch", prefix: "lucide", viewBox: "0 0 24 24", markup: '<path d="M6 3v12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="18" cy="6" r="3" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="6" cy="18" r="3" fill="none" stroke="currentColor" stroke-width="2"/><path d="M18 9a9 9 0 0 1-9 9" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>' },
+  { id: "local:emoticon", name: "emoticon", viewBox: "0 0 24 24", markup: '<g transform="rotate(90 12 12)"><path fill="currentColor" d="M6.5 17q-.65 0-1.075-.425T5 15.5q0-.625.425-1.062T6.5 14q.625 0 1.063.438T8 15.5q0 .65-.437 1.075T6.5 17m0-7q-.65 0-1.075-.425T5 8.5q0-.625.425-1.062T6.5 7q.625 0 1.063.438T8 8.5q0 .65-.437 1.075T6.5 10m3.5 3v-2h4v2zm7.2 5l-1.65-1.1q.7-1.075 1.075-2.312T17 12q0-1.65-.537-3.1T14.95 6.275L16.475 5q1.2 1.425 1.863 3.213T19 12q0 1.675-.475 3.188T17.2 18"/></g>' },
   { id: "local:gear", name: "system", viewBox: "0 0 24 24", markup: '<path fill-rule="evenodd" d="M9.2 2h5.6l.5 2.2 1.7 1 2.2-.7 2.8 4.8-1.7 1.5v2.4l1.7 1.5-2.8 4.8-2.2-.7-1.7 1-.5 2.2H9.2l-.5-2.2-1.7-1-2.2.7L2 14.7l1.7-1.5v-2.4L2 9.3l2.8-4.8 2.2.7 1.7-1L9.2 2Zm2.8 14a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z"/>' },
   { id: "local:spark", name: "effect", viewBox: "0 0 24 24", markup: '<path d="M12 1.8c.5 4.7 3.5 7.7 8.2 8.2-4.7.5-7.7 3.5-8.2 8.2-.5-4.7-3.5-7.7-8.2-8.2 4.7-.5 7.7-3.5 8.2-8.2ZM19 15.5c.2 2 1.5 3.3 3.5 3.5-2 .2-3.3 1.5-3.5 3.5-.2-2-1.5-3.3-3.5-3.5 2-.2 3.3-1.5 3.5-3.5Z"/>' },
   { id: "local:sword", name: "weapon", viewBox: "0 0 24 24", markup: '<path d="m20.85 2-2.12 7.4-7.35 7.35-2.12-2.12 7.35-7.35L20.85 2ZM8.2 14.57l1.24 1.24-2.13 2.13 1.42 1.42-1.77 1.77-4.09-4.09 1.77-1.77 1.42 1.42 2.14-2.12Z"/>' },
@@ -78,31 +78,38 @@ function iconifyUrl(id) {
   return `https://api.iconify.design/${encodeURIComponent(prefix)}/${encodeURIComponent(nameParts.join(":"))}.svg`;
 }
 
-function customShapeMarkup(color, extraTransform = "", withOutline = false) {
+function customShapeMarkup(color, extraTransform = "", withOutline = false, outlineOnly = false) {
   if (!state.customShape) return "";
   const [minX, minY, width, height] = state.customShape.viewBox.split(/[ ,]+/).map(Number);
   if (![minX, minY, width, height].every(Number.isFinite) || width <= 0 || height <= 0) return "";
   const scale = Math.min(53 / width, 59 / height);
   const x = 5.5 + (53 - width * scale) / 2 - minX * scale;
   const y = 2.5 + (59 - height * scale) / 2 - minY * scale;
-  const outline = withOutline ? `stroke="${state.palette.outline}" stroke-width="${1.5 / scale}" stroke-linejoin="round" paint-order="stroke fill"` : 'stroke="none"';
-  return `<g color="${color}" fill="currentColor" ${outline} transform="${extraTransform} translate(${x} ${y}) scale(${scale})">${state.customShape.markup}</g>`;
+  const outline = withOutline ? `stroke="${state.palette.outline}" stroke-width="${1.5 / scale}" stroke-linejoin="round"` : 'stroke="none"';
+  const fill = outlineOnly ? "none" : "currentColor";
+  return `<g color="${color}" fill="${fill}" ${outline} transform="${extraTransform} translate(${x} ${y}) scale(${scale})">${state.customShape.markup}</g>`;
 }
 
 function shapeContent(mode = "body") {
   if (state.template === "custom" && state.customShape) {
     if (mode === "clip") return customShapeMarkup("#000000");
     if (mode === "shadow") return customShapeMarkup("#000000");
-    return customShapeMarkup(state.palette.background, "", true);
+    if (mode === "outline") return customShapeMarkup(state.palette.background, "", true, true);
+    return customShapeMarkup(state.palette.background);
   }
   const shape = shapes[state.template] || shapes.bevel;
   if (mode === "clip") return `<path d="${shape}"/>`;
   if (mode === "shadow") return `<path d="${shape}" fill="#000000"/>`;
-  return `<path d="${shape}" fill="${state.palette.background}" stroke="${state.palette.outline}" stroke-width="1.5" stroke-linejoin="round"/>`;
+  if (mode === "outline") return `<path d="${shape}" fill="none" stroke="${state.palette.outline}" stroke-width="1.5" stroke-linejoin="round"/>`;
+  return `<path d="${shape}" fill="${state.palette.background}"/>`;
 }
 
 function templateMarkup() {
   return `<g opacity=".26" transform="translate(.8 .8)">${shapeContent("shadow")}</g>${shapeContent("body")}`;
+}
+
+function outlineMarkup() {
+  return shapeContent("outline");
 }
 
 function labelMarkup() {
@@ -110,7 +117,7 @@ function labelMarkup() {
   const label = state.text.trim().slice(0, 18);
   const estimatedWidth = Math.max(1, label.length * state.textSize * .62);
   const scaleX = Math.min(1, 45 / estimatedWidth);
-  const band = state.textMode === "band" ? `<rect class="label-band" x="5" y="45" width="54" height="17" fill="${state.palette.band}" clip-path="url(#shape-clip)"/>` : "";
+  const band = state.textMode === "band" ? `<rect class="label-band" x="5.5" y="45" width="53" height="17" fill="${state.palette.band}" clip-path="url(#shape-clip)"/>` : "";
   const text = `<text x="32" y="56.4" fill="${state.palette.text}" font-family="Arial,Helvetica,sans-serif" font-size="${state.textSize}" font-weight="800" letter-spacing="-.18" text-anchor="middle">${escapeXml(label)}</text>`;
   return `${band}<g class="label-text" clip-path="url(#shape-clip)" transform="translate(32 0) scale(${scaleX} 1) translate(-32 0)">${text}</g>`;
 }
@@ -121,7 +128,7 @@ function buildSvg() {
   const y = 32 - size / 2 + state.y;
   const glyphCenter = state.showText ? 25 : 32;
   const glyphY = glyphCenter - size / 2 + state.y;
-  return `<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64"><title>${escapeXml(state.glyph.name)} Unity script icon</title><defs><clipPath id="shape-clip">${shapeContent("clip")}</clipPath></defs>${templateMarkup()}<g color="${state.palette.glyph}" transform="rotate(${state.rotation} 32 ${glyphCenter})"><svg x="${x}" y="${glyphY}" width="${size}" height="${size}" viewBox="${escapeXml(state.glyph.viewBox)}" overflow="visible" fill="currentColor" color="${state.palette.glyph}" preserveAspectRatio="xMidYMid meet">${state.glyph.markup}</svg></g>${labelMarkup()}</svg>`;
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64"><title>${escapeXml(state.glyph.name)} Unity script icon</title><defs><clipPath id="shape-clip">${shapeContent("clip")}</clipPath></defs>${templateMarkup()}<g color="${state.palette.glyph}" transform="rotate(${state.rotation} 32 ${glyphCenter})"><svg x="${x}" y="${glyphY}" width="${size}" height="${size}" viewBox="${escapeXml(state.glyph.viewBox)}" overflow="visible" fill="currentColor" color="${state.palette.glyph}" preserveAspectRatio="xMidYMid meet">${state.glyph.markup}</svg></g>${labelMarkup()}${outlineMarkup()}</svg>`;
 }
 
 function render() {

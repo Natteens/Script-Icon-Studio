@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="src/assets/icon.svg" width="104" alt="Unity Icon Studio logo">
+  <img src="src/assets/unity-icon-studio.svg" width="104" alt="Unity Icon Studio logo">
 </p>
 
 <h1 align="center">Unity Icon Studio</h1>
@@ -48,7 +48,7 @@ Then open `http://localhost:8080`.
 ```text
 src/
 ├── assets/
-│   └── icon.svg
+│   └── unity-icon-studio.svg
 ├── css/
 │   └── styles.css
 ├── js/
