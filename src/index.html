@@ -7,8 +7,8 @@
     <meta name="theme-color" content="#0D0F12" />
     <title>Unity Icon Studio</title>
     <link rel="icon" href="./assets/unity-icon-studio.svg" type="image/svg+xml" />
-    <link rel="stylesheet" href="./css/styles.css?v=5" />
-    <script src="./js/app.js?v=5" defer></script>
+    <link rel="stylesheet" href="./css/styles.css?v=6" />
+    <script src="./js/app.js?v=6" defer></script>
   </head>
   <body>
     <header class="app-header">
@@ -60,10 +60,14 @@
           <div class="section-heading"><div><span class="eyebrow">02</span><h2>Colors</h2></div><span id="palette-name">Blue</span></div>
           <div class="palette-list" id="palette-list" aria-label="Color palettes"></div>
           <div class="color-list">
-            <label><span>Background</span><span class="color-field"><input id="color-background" type="color" /><output id="value-background"></output></span></label>
-            <label><span>Glyph</span><span class="color-field"><input id="color-glyph" type="color" /><output id="value-glyph"></output></span></label>
-            <label><span>Outline</span><span class="color-field"><input id="color-outline" type="color" /><output id="value-outline"></output></span></label>
+            <div class="color-row"><span>Background</span><span class="color-field"><input id="color-background" type="color" aria-label="Background color" /><input class="hex-input" id="hex-background" type="text" maxlength="9" spellcheck="false" aria-label="Background HEX or HEXA" /></span></div>
+            <div class="color-row"><span>Glyph</span><span class="color-field"><input id="color-glyph" type="color" aria-label="Glyph color" /><input class="hex-input" id="hex-glyph" type="text" maxlength="9" spellcheck="false" aria-label="Glyph HEX or HEXA" /></span></div>
+            <div class="color-row" id="outline-color-row">
+              <span class="color-name">Outline <label class="toggle compact-toggle" title="Toggle outline"><input id="show-outline" type="checkbox" checked /><span aria-hidden="true"></span></label></span>
+              <span class="color-field"><input id="color-outline" type="color" aria-label="Outline color" /><input class="hex-input" id="hex-outline" type="text" maxlength="9" spellcheck="false" aria-label="Outline HEX or HEXA" /></span>
+            </div>
           </div>
+          <p class="control-note color-note">HEX supports <code>#RRGGBB</code> and <code>#RRGGBBAA</code>.</p>
         </section>
 
         <section class="control-block glyph-section">
@@ -97,11 +101,11 @@
               <button data-text-mode="plain" type="button">Text only</button>
             </div>
             <div class="range-list compact">
-              <label><span>Text size <output id="value-text-size">8.75px</output></span><input id="text-size" type="range" min="6" max="12" step="0.25" value="8.75" /></label>
+              <label><span>Text size <input class="exact-input" id="exact-text-size" type="number" min="6" max="12" step="0.05" value="8.75" aria-label="Exact text size" /></span><input id="text-size" type="range" min="6" max="12" step="0.05" value="8.75" /></label>
             </div>
             <div class="color-list compact-colors">
-              <label id="band-color-row"><span>Band</span><span class="color-field"><input id="color-band" type="color" /><output id="value-band"></output></span></label>
-              <label><span>Text</span><span class="color-field"><input id="color-text" type="color" /><output id="value-text"></output></span></label>
+              <div class="color-row" id="band-color-row"><span>Band</span><span class="color-field"><input id="color-band" type="color" aria-label="Band color" /><input class="hex-input" id="hex-band" type="text" maxlength="9" spellcheck="false" aria-label="Band HEX or HEXA" /></span></div>
+              <div class="color-row"><span>Text</span><span class="color-field"><input id="color-text" type="color" aria-label="Text color" /><input class="hex-input" id="hex-text" type="text" maxlength="9" spellcheck="false" aria-label="Text HEX or HEXA" /></span></div>
             </div>
             <p class="control-note">Long labels are fitted and clipped inside the selected shape.</p>
           </div>
@@ -110,10 +114,10 @@
         <details class="control-block adjustments" open>
           <summary><span><span class="eyebrow">05</span><strong>Adjust glyph</strong></span><svg viewBox="0 0 20 20" aria-hidden="true"><path d="m6 8 4 4 4-4"/></svg></summary>
           <div class="range-list">
-            <label><span>Position X <output id="value-x">0</output></span><input id="glyph-x" type="range" min="-16" max="16" value="0" /></label>
-            <label><span>Position Y <output id="value-y">0</output></span><input id="glyph-y" type="range" min="-16" max="16" value="0" /></label>
-            <label><span>Size <output id="value-scale">100%</output></span><input id="glyph-scale" type="range" min="50" max="160" value="100" /></label>
-            <label><span>Rotation <output id="value-rotation">0°</output></span><input id="glyph-rotation" type="range" min="-180" max="180" value="0" /></label>
+            <label><span>Position X <input class="exact-input" id="exact-x" type="number" min="-16" max="16" step="0.1" value="0" aria-label="Exact horizontal position" /></span><input id="glyph-x" type="range" min="-16" max="16" step="0.1" value="0" /></label>
+            <label><span>Position Y <input class="exact-input" id="exact-y" type="number" min="-16" max="16" step="0.1" value="0" aria-label="Exact vertical position" /></span><input id="glyph-y" type="range" min="-16" max="16" step="0.1" value="0" /></label>
+            <label><span>Size (%) <input class="exact-input" id="exact-scale" type="number" min="50" max="160" step="0.1" value="100" aria-label="Exact glyph size percentage" /></span><input id="glyph-scale" type="range" min="50" max="160" step="0.1" value="100" /></label>
+            <label><span>Rotation (°) <input class="exact-input" id="exact-rotation" type="number" min="-180" max="180" step="0.1" value="0" aria-label="Exact glyph rotation" /></span><input id="glyph-rotation" type="range" min="-180" max="180" step="0.1" value="0" /></label>
           </div>
           <button class="text-action" id="reset-transform" type="button">Center glyph</button>
         </details>

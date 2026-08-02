@@ -2,11 +2,19 @@
 
 const palettes = [
   { name: "Blue", background: "#4D87ED", glyph: "#FFFFFF", outline: "#315DA4", band: "#3C70CE", text: "#FFFFFF" },
+  { name: "Indigo", background: "#5965E8", glyph: "#FFFFFF", outline: "#39439E", band: "#4651C2", text: "#FFFFFF" },
+  { name: "Cyan", background: "#27B7D6", glyph: "#FFFFFF", outline: "#14788E", band: "#1D91AA", text: "#FFFFFF" },
+  { name: "Teal", background: "#27AE96", glyph: "#FFFFFF", outline: "#176F61", band: "#208B78", text: "#FFFFFF" },
+  { name: "Green", background: "#52B86A", glyph: "#FFFFFF", outline: "#2E7840", band: "#3E9653", text: "#FFFFFF" },
+  { name: "Lime", background: "#A8D64F", glyph: "#1D2812", outline: "#688C29", band: "#87B43B", text: "#1D2812" },
+  { name: "Amber", background: "#F3C744", glyph: "#262719", outline: "#9A7720", band: "#D2A72D", text: "#262719" },
+  { name: "Orange", background: "#F28A3C", glyph: "#FFFFFF", outline: "#A5521E", band: "#CE6C29", text: "#FFFFFF" },
+  { name: "Red", background: "#ED3454", glyph: "#FFFFFF", outline: "#9F1D35", band: "#C52945", text: "#FFFFFF" },
+  { name: "Rose", background: "#E94F71", glyph: "#FFFFFF", outline: "#983047", band: "#C33E5B", text: "#FFFFFF" },
   { name: "Pink", background: "#F34F8C", glyph: "#FFFFFF", outline: "#A92E60", band: "#C53870", text: "#FFFFFF" },
   { name: "Violet", background: "#9362DB", glyph: "#FFFFFF", outline: "#633AA2", band: "#7448B7", text: "#FFFFFF" },
-  { name: "Red", background: "#ED3454", glyph: "#FFFFFF", outline: "#9F1D35", band: "#C52945", text: "#FFFFFF" },
-  { name: "Amber", background: "#F3C744", glyph: "#262719", outline: "#9A7720", band: "#D2A72D", text: "#262719" },
-  { name: "Slate", background: "#566173", glyph: "#FFFFFF", outline: "#303947", band: "#414B5B", text: "#FFFFFF" }
+  { name: "Slate", background: "#566173", glyph: "#FFFFFF", outline: "#303947", band: "#414B5B", text: "#FFFFFF" },
+  { name: "Ghost", background: "#DDE8F080", glyph: "#FFFFFFFF", outline: "#AABBC8B8", band: "#26384CB8", text: "#FFFFFFFF" }
 ];
 
 const builtIns = [
@@ -53,7 +61,8 @@ const state = {
   showText: false,
   text: "ICON",
   textMode: "band",
-  textSize: 8.75
+  textSize: 8.75,
+  outlineEnabled: true
 };
 
 const searchCache = new Map();
@@ -67,6 +76,25 @@ const $$ = (selector) => [...document.querySelectorAll(selector)];
 
 function escapeXml(value) {
   return String(value).replace(/[<>&"']/g, (character) => ({ "<": "&lt;", ">": "&gt;", "&": "&amp;", '"': "&quot;", "'": "&apos;" }[character]));
+}
+
+function normalizeHex(value) {
+  const raw = String(value).trim().replace(/^#/, "");
+  if (!/^(?:[0-9a-fA-F]{6}|[0-9a-fA-F]{8})$/.test(raw)) return null;
+  return `#${raw.toUpperCase()}`;
+}
+
+function rgbPart(value) {
+  return normalizeHex(value)?.slice(0, 7) || "#000000";
+}
+
+function alphaPart(value) {
+  const normalized = normalizeHex(value);
+  return normalized?.length === 9 ? normalized.slice(7) : "";
+}
+
+function precise(value) {
+  return Number(Number(value).toFixed(2));
 }
 
 function fileName() {
@@ -109,7 +137,7 @@ function templateMarkup() {
 }
 
 function outlineMarkup() {
-  return shapeContent("outline");
+  return state.outlineEnabled ? shapeContent("outline") : "";
 }
 
 function labelMarkup() {
@@ -142,21 +170,35 @@ function render() {
 
 function updateColorControls() {
   ["background", "glyph", "outline", "band", "text"].forEach((key) => {
-    $(`#color-${key}`).value = state.palette[key];
-    $(`#value-${key}`).textContent = state.palette[key];
+    $(`#color-${key}`).value = rgbPart(state.palette[key]);
+    const hexInput = $(`#hex-${key}`);
+    if (document.activeElement !== hexInput) hexInput.value = state.palette[key];
+    hexInput.classList.remove("invalid");
   });
+  $("#show-outline").checked = state.outlineEnabled;
+  $("#outline-color-row").classList.toggle("disabled", !state.outlineEnabled);
+  $("#color-outline").disabled = !state.outlineEnabled;
+  $("#hex-outline").disabled = !state.outlineEnabled;
 }
 
 function updateRangeOutputs() {
-  $("#value-x").textContent = state.x;
-  $("#value-y").textContent = state.y;
-  $("#value-scale").textContent = `${Math.round(state.scale * 100)}%`;
-  $("#value-rotation").textContent = `${state.rotation}°`;
-  $("#value-text-size").textContent = `${state.textSize}px`;
+  const values = {
+    x: state.x,
+    y: state.y,
+    scale: precise(state.scale * 100),
+    rotation: state.rotation,
+    "text-size": state.textSize
+  };
+  Object.entries(values).forEach(([key, value]) => {
+    const range = key === "text-size" ? $("#text-size") : $(`#glyph-${key}`);
+    const exact = $(`#exact-${key}`);
+    range.value = value;
+    if (document.activeElement !== exact) exact.value = value;
+  });
 }
 
 function renderPalettes() {
-  $("#palette-list").innerHTML = palettes.map((palette, index) => `<button class="palette-swatch${index === 0 ? " active" : ""}" data-palette="${index}" type="button" title="${palette.name}" aria-label="${palette.name} palette" style="background:${palette.background}"></button>`).join("");
+  $("#palette-list").innerHTML = palettes.map((palette, index) => `<button class="palette-swatch${index === 0 ? " active" : ""}" data-palette="${index}" type="button" title="${palette.name}" aria-label="${palette.name} palette" style="--swatch:${palette.background}"></button>`).join("");
 }
 
 function glyphPreview(glyph) {
@@ -417,11 +459,13 @@ function resetAll() {
   state.text = "ICON";
   state.textMode = "band";
   state.textSize = 8.75;
+  state.outlineEnabled = true;
   resetTransform();
   $("#icon-search").value = "";
   $("#show-text").checked = false;
   $("#label-text").value = "ICON";
   $("#text-size").value = "8.75";
+  $("#show-outline").checked = true;
   $("#text-controls").hidden = true;
   $("#band-color-row").hidden = false;
   $("#custom-shape-option").hidden = true;
@@ -453,13 +497,35 @@ $("#palette-list").addEventListener("click", (event) => {
   render();
 });
 
-[$("#color-background"), $("#color-glyph"), $("#color-outline"), $("#color-band"), $("#color-text")].forEach((input) => {
-  input.addEventListener("input", () => {
-    const key = input.id.replace("color-", "");
-    state.palette = { ...state.palette, name: "Custom", [key]: input.value.toUpperCase() };
+[$("#color-background"), $("#color-glyph"), $("#color-outline"), $("#color-band"), $("#color-text")].forEach((picker) => {
+  picker.addEventListener("input", () => {
+    const key = picker.id.replace("color-", "");
+    const value = `${picker.value.toUpperCase()}${alphaPart(state.palette[key])}`;
+    state.palette = { ...state.palette, name: "Custom", [key]: value };
     $$(".palette-swatch").forEach((item) => item.classList.remove("active"));
     render();
   });
+});
+
+$$('.hex-input').forEach((input) => {
+  const key = input.id.replace("hex-", "");
+  input.addEventListener("input", () => {
+    const value = normalizeHex(input.value);
+    input.classList.toggle("invalid", !value);
+    if (!value) return;
+    state.palette = { ...state.palette, name: "Custom", [key]: value };
+    $$(".palette-swatch").forEach((item) => item.classList.remove("active"));
+    render();
+  });
+  input.addEventListener("blur", () => {
+    input.value = state.palette[key];
+    input.classList.remove("invalid");
+  });
+});
+
+$("#show-outline").addEventListener("change", (event) => {
+  state.outlineEnabled = event.target.checked;
+  render();
 });
 
 $(".template-picker").addEventListener("click", (event) => {
@@ -502,16 +568,24 @@ $("#glyph-results").addEventListener("click", (event) => {
 });
 
 const rangeBindings = [
-  ["#glyph-x", "x", (value) => Number(value)],
-  ["#glyph-y", "y", (value) => Number(value)],
-  ["#glyph-scale", "scale", (value) => Number(value) / 100],
-  ["#glyph-rotation", "rotation", (value) => Number(value)]
+  ["#glyph-x", "#exact-x", "x", (value) => precise(value)],
+  ["#glyph-y", "#exact-y", "y", (value) => precise(value)],
+  ["#glyph-scale", "#exact-scale", "scale", (value) => precise(value) / 100],
+  ["#glyph-rotation", "#exact-rotation", "rotation", (value) => precise(value)],
+  ["#text-size", "#exact-text-size", "textSize", (value) => precise(value)]
 ];
-rangeBindings.forEach(([selector, key, parse]) => {
-  $(selector).addEventListener("input", (event) => {
-    state[key] = parse(event.target.value);
+rangeBindings.forEach(([rangeSelector, exactSelector, key, parse]) => {
+  const range = $(rangeSelector);
+  const exact = $(exactSelector);
+  const apply = (rawValue) => {
+    if (rawValue === "" || !Number.isFinite(Number(rawValue))) return;
+    const value = Math.min(Number(range.max), Math.max(Number(range.min), Number(rawValue)));
+    state[key] = parse(value);
     render();
-  });
+  };
+  range.addEventListener("input", (event) => apply(event.target.value));
+  exact.addEventListener("input", (event) => apply(event.target.value));
+  exact.addEventListener("blur", () => updateRangeOutputs());
 });
 
 $("#background-switch").addEventListener("click", (event) => {
@@ -548,10 +622,6 @@ $("#text-mode").addEventListener("click", (event) => {
   state.textMode = button.dataset.textMode;
   $$("[data-text-mode]").forEach((item) => item.classList.toggle("active", item === button));
   $("#band-color-row").hidden = state.textMode !== "band";
-  render();
-});
-$("#text-size").addEventListener("input", (event) => {
-  state.textSize = Number(event.target.value);
   render();
 });
 $("#reset-transform").addEventListener("click", resetTransform);
