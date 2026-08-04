@@ -30,9 +30,15 @@ Everything is edited and exported locally in the browser. Only glyph search uses
 - Custom glyph import by file picker or drag and drop
 - Optional labels with a band or text-only style
 - Exact controls for position, size, rotation, and text size
-- Preview at 64, 48, and 32 pixels
+- Preview at 64, 48, 32, and 16 pixels
 - PNG export at 64, 128, and 256 pixels
 - Flattened SVG export for UI Toolkit Vector Image
+- Automatic draft saving in the browser
+- Undo and redo with buttons and keyboard shortcuts
+- Custom output file names
+- Copy SVG directly to the clipboard
+- Warnings when imported SVG parts are removed
+- Warnings when label characters cannot be represented in the exported SVG
 - No account, server, build step, or runtime dependency
 
 ## Export formats
@@ -43,6 +49,12 @@ Everything is edited and exported locally in the browser. Only glyph search uses
 | UI Toolkit SVG | Vector images imported by Unity as UI Toolkit Vector Image assets |
 
 The UI Toolkit export converts labels and imported geometry into explicit paths. The downloaded file uses one root SVG and avoids SVG text, nested SVG elements, CSS, `currentColor`, masks, filters, linked assets, and font references.
+
+## Drafts and history
+
+The current icon is stored in the browser automatically. Reloading or reopening the site restores the latest draft from that browser.
+
+Undo and redo history is kept for the current browser session. Imported SVG geometry, colors, transforms, labels, and the custom file name are included in saved drafts.
 
 ## Run locally
 
@@ -63,7 +75,8 @@ src/
 ├── css/
 │   └── styles.css
 ├── js/
-│   └── app.js
+│   ├── app.js
+│   └── qol.js
 ├── .nojekyll
 └── index.html
 ```
@@ -80,9 +93,13 @@ Search results are limited to these collections:
 
 Imported SVG files keep their original licenses. See [THIRD_PARTY_NOTICES.md](./THIRD_PARTY_NOTICES.md) for the complete source and license list.
 
-## Keyboard shortcut
+## Keyboard shortcuts
 
-Press `Ctrl + S` or `Cmd + S` to download the current UI Toolkit SVG.
+| Shortcut | Action |
+| --- | --- |
+| `Ctrl + S` or `Cmd + S` | Download the current UI Toolkit SVG |
+| `Ctrl + Z` or `Cmd + Z` | Undo the latest change |
+| `Ctrl + Y`, `Cmd + Y`, or `Cmd + Shift + Z` | Redo the latest undone change |
 
 ## Trademark notice
 
