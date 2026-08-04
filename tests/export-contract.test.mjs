@@ -36,7 +36,7 @@ test("UI Toolkit SVG output is flattened to paths", () => {
   assert.match(app, /function buildUnitySvg\s*\(/);
   assert.match(app, /const glyph = unityGlyphPaths\(\)/);
   assert.match(app, /const label = labelPath \? explicitPath\(labelPath, text\) : ""/);
-  assert.match(app, /<svg xmlns=\\"http:\/\/www\.w3\.org\/2000\/svg\\" width=\\"64\\" height=\\"64\\" viewBox=\\"0 0 64 64\\">/);
+  assert.ok(app.includes('<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64">'));
 });
 
 test("default file names use a stable icon_label_glyph convention", () => {
