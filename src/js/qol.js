@@ -1,16 +1,17 @@
 "use strict";
 
 (() => {
-  const STORAGE_KEY = "script-icon-studio:draft:v1";
+  const STORAGE_KEY = "script-icon-studio:draft:v2";
   const HISTORY_LIMIT = 80;
-  const originalFileName = fileName;
   const originalImportSvg = importSvg;
   const originalImportShape = importShape;
+  const originalNotify = notify;
   let restoring = false;
   let history = [];
   let historyIndex = -1;
   let lastFingerprint = "";
   let customFileName = "";
+  let automaticFileName = "";
 
   const style = document.createElement("style");
   style.textContent = `
@@ -20,30 +21,40 @@
     .filename-field { display: grid; gap: 6px; margin-bottom: 10px; }
     .filename-field span { color: var(--muted); font-size: 10px; }
     .filename-field input { width: 100%; height: 36px; padding: 0 10px; border: 1px solid var(--line-strong); border-radius: 7px; background: #0f1216; font-size: 11px; }
+    .filename-field input[data-auto="true"] { color: #aeb7c4; }
     .filename-field small { color: var(--subtle); font-size: 9px; line-height: 1.4; }
     .label-warning { color: #e9b45f; }
     .size-16 { width: 16px; height: 16px; }
-    @media (max-width: 720px) {
-      .history-button { display: none; }
-    }
+    .export-grid .button { min-height: 38px; }
+    .export-copy { grid-column: 1 / -1; }
+    @media (max-width: 720px) { .history-button { display: none; } }
   `;
   document.head.append(style);
+
+  document.querySelector("#export-svg-top")?.remove();
+
+  const exportSvgButton = document.querySelector("#export-svg");
+  exportSvgButton.classList.remove("primary");
+  exportSvgButton.classList.add("secondary");
+  exportSvgButton.textContent = "SVG";
+  exportSvgButton.title = "Download a flattened SVG compatible with UI Toolkit Vector Image";
+  document.querySelectorAll("[data-png]").forEach((button) => {
+    button.classList.remove("primary");
+    button.classList.add("secondary");
+    button.textContent = `PNG ${button.dataset.png}`;
+  });
 
   const resetButton = document.querySelector("#reset-all");
   const undoButton = document.createElement("button");
   undoButton.className = "button secondary history-button";
-  undoButton.id = "undo-change";
   undoButton.type = "button";
   undoButton.textContent = "Undo";
   undoButton.title = "Undo Ctrl+Z";
-
   const redoButton = document.createElement("button");
   redoButton.className = "button secondary history-button";
-  redoButton.id = "redo-change";
   redoButton.type = "button";
   redoButton.textContent = "Redo";
   redoButton.title = "Redo Ctrl+Y";
-
   resetButton.before(undoButton, redoButton);
 
   const exportGrid = document.querySelector(".export-grid");
@@ -51,54 +62,99 @@
   filenameField.className = "filename-field";
   filenameField.innerHTML = `
     <span>File name</span>
-    <input id="file-name" type="text" maxlength="64" autocomplete="off" spellcheck="false" placeholder="emoticon" />
-    <small>Leave empty to use the selected glyph name. Your draft is saved automatically in this browser.</small>
+    <input id="file-name" type="text" maxlength="64" autocomplete="off" spellcheck="false" placeholder="icon_fsm_hierarchy" />
+    <small>Generated from the label and glyph. Edit it at any time. Clear the field to restore the automatic name.</small>
   `;
   exportGrid.before(filenameField);
 
   const copyButton = document.createElement("button");
-  copyButton.className = "button secondary";
-  copyButton.id = "copy-svg";
+  copyButton.className = "button secondary export-copy";
   copyButton.type = "button";
   copyButton.textContent = "Copy SVG";
   exportGrid.append(copyButton);
 
-  const actualSizes = document.querySelector(".actual-sizes");
   const size16 = document.createElement("div");
   size16.innerHTML = '<span class="size-icon size-16"></span><small>16</small>';
-  actualSizes.append(size16);
+  document.querySelector(".actual-sizes").append(size16);
 
-  const labelNote = document.querySelector(".text-controls .control-note");
   const labelWarning = document.createElement("p");
   labelWarning.className = "control-note label-warning";
-  labelWarning.id = "label-warning";
   labelWarning.hidden = true;
-  labelWarning.textContent = "UI Toolkit SVG labels support A-Z, 0-9, spaces, period, hyphen, and underscore. Other characters become question marks.";
-  labelNote.after(labelWarning);
+  labelWarning.textContent = "SVG labels support A-Z, 0-9, spaces, period, hyphen, and underscore. Other characters become question marks.";
+  document.querySelector(".text-controls .control-note").after(labelWarning);
 
   const fileNameInput = document.querySelector("#file-name");
 
   function clone(value) {
-    return JSON.parse(JSON.stringify(value));
+    return value == null ? value : JSON.parse(JSON.stringify(value));
   }
 
-  function cleanFileName(value) {
+  function cleanPart(value) {
     return String(value || "")
+      .normalize("NFKD")
+      .replace(/[\u0300-\u036f]/g, "")
       .trim()
       .toLowerCase()
-      .replace(/[^a-z0-9._-]+/g, "-")
-      .replace(/-{2,}/g, "-")
-      .replace(/^[-._]+|[-._]+$/g, "")
-      .slice(0, 64);
+      .replace(/[^a-z0-9]+/g, "_")
+      .replace(/_{2,}/g, "_")
+      .replace(/^_+|_+$/g, "");
+  }
+
+  function generatedFileName() {
+    const label = state.showText ? cleanPart(state.text) : "";
+    const glyph = cleanPart(state.glyph?.name) || "icon";
+    const parts = ["icon"];
+    if (label && label !== "icon") parts.push(label);
+    if (glyph && glyph !== label && glyph !== "icon") parts.push(glyph);
+    return parts.join("_").slice(0, 64).replace(/_+$/g, "") || "icon";
+  }
+
+  function refreshFileNameField() {
+    automaticFileName = generatedFileName();
+    fileNameInput.value = customFileName || automaticFileName;
+    fileNameInput.dataset.auto = String(!customFileName);
   }
 
   fileName = function resolvedFileName() {
-    return cleanFileName(customFileName) || originalFileName() || "script-icon";
+    return cleanPart(customFileName) || generatedFileName();
+  };
+
+  notify = function polishedNotify(message) {
+    const replacements = new Map([
+      ["Unity-compatible SVG 64 × 64 downloaded.", "SVG downloaded."],
+      ["UI Toolkit SVG copied.", "SVG copied."],
+      ["The Unity-compatible SVG could not be generated.", "The SVG could not be generated."]
+    ]);
+    originalNotify(replacements.get(message) || message);
+  };
+
+  exportPng = function polishedExportPng(size) {
+    const image = new Image();
+    const source = URL.createObjectURL(new Blob([buildSvg()], { type: "image/svg+xml" }));
+    image.onload = () => {
+      const canvas = document.createElement("canvas");
+      canvas.width = size;
+      canvas.height = size;
+      const context = canvas.getContext("2d");
+      context.imageSmoothingEnabled = true;
+      context.imageSmoothingQuality = "high";
+      context.drawImage(image, 0, 0, size, size);
+      canvas.toBlob((blob) => {
+        if (blob) download(`${fileName()}_${size}.png`, blob, "image/png");
+      }, "image/png");
+      URL.revokeObjectURL(source);
+      notify(`PNG ${size} × ${size} downloaded.`);
+    };
+    image.onerror = () => {
+      URL.revokeObjectURL(source);
+      notify("The PNG could not be generated.");
+    };
+    image.src = source;
   };
 
   function captureSnapshot() {
     return {
-      version: 1,
+      version: 2,
       template: state.template,
       palette: clone(state.palette),
       glyph: clone(state.glyph),
@@ -136,9 +192,12 @@
     return "Built-in glyph";
   }
 
+  function updateLabelWarning() {
+    const unsupported = [...state.text].some((character) => !/[A-Za-z0-9 ._-]/.test(character));
+    labelWarning.hidden = !state.showText || !unsupported;
+  }
+
   function syncUi(message = "") {
-    fileNameInput.value = customFileName;
-    fileNameInput.placeholder = originalFileName();
     document.querySelector("#show-outline").checked = state.outlineEnabled;
     document.querySelector("#show-text").checked = state.showText;
     document.querySelector("#label-text").value = state.text;
@@ -161,6 +220,7 @@
     document.querySelector(".preview-area").classList.toggle("dark", state.preview === "dark");
 
     render();
+    refreshFileNameField();
 
     const paletteIndex = palettes.findIndex((palette) => ["background", "glyph", "outline", "band", "text"].every((key) => palette[key] === state.palette[key]));
     document.querySelectorAll(".palette-swatch").forEach((button, index) => button.classList.toggle("active", index === paletteIndex));
@@ -171,7 +231,7 @@
   }
 
   function applySnapshot(snapshot, message) {
-    if (!snapshot || snapshot.version !== 1) return false;
+    if (!snapshot || snapshot.version !== 2) return false;
     restoring = true;
     try {
       state.template = snapshot.template;
@@ -199,14 +259,17 @@
     }
   }
 
+  function updateHistoryButtons() {
+    undoButton.disabled = historyIndex <= 0;
+    redoButton.disabled = historyIndex < 0 || historyIndex >= history.length - 1;
+  }
+
   function pushCurrentSnapshot() {
     if (restoring) return;
     const snapshot = captureSnapshot();
     const nextFingerprint = fingerprint(snapshot);
-    if (nextFingerprint === lastFingerprint) {
-      fileNameInput.placeholder = originalFileName();
-      return;
-    }
+    refreshFileNameField();
+    if (nextFingerprint === lastFingerprint) return;
     history = history.slice(0, historyIndex + 1);
     history.push(snapshot);
     if (history.length > HISTORY_LIMIT) history.shift();
@@ -214,12 +277,6 @@
     lastFingerprint = nextFingerprint;
     saveDraft(snapshot);
     updateHistoryButtons();
-    fileNameInput.placeholder = originalFileName();
-  }
-
-  function updateHistoryButtons() {
-    undoButton.disabled = historyIndex <= 0;
-    redoButton.disabled = historyIndex < 0 || historyIndex >= history.length - 1;
   }
 
   function undo() {
@@ -276,11 +333,6 @@
     }
   };
 
-  function updateLabelWarning() {
-    const unsupported = [...state.text].some((character) => !/[A-Za-z0-9 ._-]/.test(character));
-    labelWarning.hidden = !state.showText || !unsupported;
-  }
-
   async function copySvg() {
     try {
       const svg = buildUnitySvg();
@@ -296,25 +348,30 @@
         document.execCommand("copy");
         textarea.remove();
       }
-      notify("UI Toolkit SVG copied.");
+      notify("SVG copied.");
     } catch (error) {
       notify(error.message || "The SVG could not be copied.");
     }
   }
 
-  fileNameInput.addEventListener("input", (event) => {
-    customFileName = event.target.value;
+  fileNameInput.addEventListener("focus", () => {
+    if (!customFileName) fileNameInput.select();
+  });
+  fileNameInput.addEventListener("input", () => {
+    const typed = fileNameInput.value;
+    customFileName = typed === automaticFileName ? "" : typed;
+    fileNameInput.dataset.auto = String(!customFileName);
   });
   fileNameInput.addEventListener("blur", () => {
-    customFileName = cleanFileName(customFileName);
-    fileNameInput.value = customFileName;
+    customFileName = cleanPart(customFileName);
+    refreshFileNameField();
     pushCurrentSnapshot();
   });
   document.querySelector("#label-text").addEventListener("input", updateLabelWarning);
   resetButton.addEventListener("click", () => {
     customFileName = "";
-    fileNameInput.value = "";
     labelWarning.hidden = true;
+    setTimeout(refreshFileNameField, 0);
   });
   undoButton.addEventListener("click", undo);
   redoButton.addEventListener("click", redo);
