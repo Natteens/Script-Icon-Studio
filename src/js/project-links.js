@@ -5,7 +5,7 @@
     repository: "https://github.com/Natteens/Script-Icon-Studio",
     license: "https://github.com/Natteens/Script-Icon-Studio/blob/main/LICENSE",
     notices: "https://github.com/Natteens/Script-Icon-Studio/blob/main/THIRD_PARTY_NOTICES.md",
-    support: ""
+    support: "https://github.com/sponsors/Natteens"
   };
 
   const icon = (path) => `<svg viewBox="0 0 24 24" aria-hidden="true">${path}</svg>`;
