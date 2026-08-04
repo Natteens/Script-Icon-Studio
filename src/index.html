@@ -3,23 +3,23 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="description" content="Create consistent 64 × 64 icons for Unity scripts." />
+    <meta name="description" content="Create consistent icons for Unity projects and UI Toolkit." />
     <meta name="theme-color" content="#0D0F12" />
-    <title>Unity Icon Studio</title>
+    <title>Script Icon Studio</title>
     <link rel="icon" href="./assets/unity-icon-studio.svg" type="image/svg+xml" />
     <link rel="stylesheet" href="./css/styles.css?v=7" />
     <script src="./js/app.js?v=7" defer></script>
   </head>
   <body>
     <header class="app-header">
-      <a class="brand" href="./" aria-label="Unity Icon Studio home">
+      <a class="brand" href="./" aria-label="Script Icon Studio home">
         <img src="./assets/unity-icon-studio.svg" alt="" />
-        <span><strong>Unity Icon Studio</strong><small>Script icon editor</small></span>
+        <span><strong>Script Icon Studio</strong><small>Unity project icon editor</small></span>
       </a>
       <div class="header-actions">
         <span class="status" id="status" role="status">Ready</span>
         <button class="button secondary" id="reset-all" type="button">Reset</button>
-        <button class="button primary" id="export-svg-top" type="button">Download Unity SVG</button>
+        <button class="button primary" id="export-svg-top" type="button">Download UI Toolkit SVG</button>
       </div>
     </header>
 
@@ -125,12 +125,12 @@
         <section class="control-block export-block">
           <div class="section-heading"><div><span class="eyebrow">06</span><h2>Export</h2></div></div>
           <div class="export-grid">
-            <button class="button primary" id="export-svg" type="button">Unity SVG</button>
+            <button class="button primary" id="export-svg" type="button">UI Toolkit SVG</button>
             <button class="button secondary" data-png="64" type="button">PNG 64</button>
             <button class="button secondary" data-png="128" type="button">PNG 128</button>
             <button class="button secondary" data-png="256" type="button">PNG 256</button>
           </div>
-          <p class="control-note">SVG export is flattened to paths for Unity UI Toolkit Vector Image.</p>
+          <p class="control-note">PNG exports regular images. SVG is flattened for Unity UI Toolkit Vector Image.</p>
         </section>
       </aside>
 
@@ -152,7 +152,7 @@
             <div><span class="size-icon size-32"></span><small>32</small></div>
           </div>
         </div>
-        <p class="privacy-note">Editing and export stay in your browser. Only glyph search uses the network.</p>
+        <p class="privacy-note">Editing and export stay in your browser. Only glyph search uses the network. Script Icon Studio is independent and is not affiliated with Unity Technologies. <a class="link-button" href="https://github.com/Natteens/unity-icon-studio/blob/main/THIRD_PARTY_NOTICES.md" target="_blank" rel="noreferrer">Third-party notices</a></p>
       </section>
     </main>
 
