@@ -35,7 +35,7 @@ Everything is edited and exported locally in the browser. Only glyph search uses
 - Flattened SVG export for UI Toolkit Vector Image
 - Automatic draft saving in the browser
 - Undo and redo with buttons and keyboard shortcuts
-- Custom output file names
+- Automatic and editable output file names
 - Copy SVG directly to the clipboard
 - Warnings when imported SVG parts are removed
 - Warnings when label characters cannot be represented in the exported SVG
@@ -46,9 +46,26 @@ Everything is edited and exported locally in the browser. Only glyph search uses
 | Format | Intended use |
 | --- | --- |
 | PNG | Regular images for scripts, packages, editor tools, documentation, and other texture-based uses |
-| UI Toolkit SVG | Vector images imported by Unity as UI Toolkit Vector Image assets |
+| SVG | Flattened vector images compatible with Unity UI Toolkit Vector Image |
 
-The UI Toolkit export converts labels and imported geometry into explicit paths. The downloaded file uses one root SVG and avoids SVG text, nested SVG elements, CSS, `currentColor`, masks, filters, linked assets, and font references.
+The SVG export converts labels and imported geometry into explicit paths. The downloaded file uses one root SVG and avoids SVG text, nested SVG elements, CSS, `currentColor`, masks, filters, linked assets, and font references.
+
+## File names
+
+The editor creates a readable name from the label and selected glyph. A label named `FSM` with a hierarchy glyph becomes:
+
+```text
+icon_fsm_hierarchy.svg
+icon_fsm_hierarchy_64.png
+```
+
+Without a label, the selected glyph is used:
+
+```text
+icon_emoticon.svg
+```
+
+Names use lowercase letters and underscores. The field remains editable, and clearing it restores the automatic name. Colors are not included because changing a palette should not change the identity of the asset.
 
 ## Drafts and history
 
@@ -97,7 +114,7 @@ Imported SVG files keep their original licenses. See [THIRD_PARTY_NOTICES.md](./
 
 | Shortcut | Action |
 | --- | --- |
-| `Ctrl + S` or `Cmd + S` | Download the current UI Toolkit SVG |
+| `Ctrl + S` or `Cmd + S` | Download the current SVG |
 | `Ctrl + Z` or `Cmd + Z` | Undo the latest change |
 | `Ctrl + Y`, `Cmd + Y`, or `Cmd + Shift + Z` | Redo the latest undone change |
 
