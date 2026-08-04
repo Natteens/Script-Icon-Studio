@@ -9,9 +9,9 @@
 </p>
 
 <p align="center">
-  <a href="https://natteens.github.io/unity-icon-studio/"><strong>Open the editor</strong></a>
+  <a href="https://scripticonstudio.pages.dev/"><strong>Open the editor</strong></a>
   ·
-  <a href="https://github.com/Natteens/unity-icon-studio/actions/workflows/pages.yml">Deployment status</a>
+  <a href="https://github.com/Natteens/Script-Icon-Studio"><strong>View source</strong></a>
 </p>
 
 ## What it does
@@ -76,7 +76,7 @@ src/
 └── index.html
 ```
 
-GitHub Pages publishes the `src` directory after every push to `main`. The workflow contains no install or build phase because the source is already deployable.
+Cloudflare Pages publishes the `src` directory automatically after every push to `main`. There is no build command because the files in `src` are already ready to serve.
 
 ## Third-party icons
 
