@@ -13,72 +13,33 @@
   const licenseIcon = icon('<path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.7" d="M6 3.5h9l3 3V20.5H6zM15 3.5v3h3M9 11h6M9 14h6M9 17h4"/>');
   const heartIcon = icon('<path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M20.8 5.7a5.4 5.4 0 0 0-7.7 0L12 6.8l-1.1-1.1a5.4 5.4 0 0 0-7.7 7.7L12 22l8.8-8.6a5.4 5.4 0 0 0 0-7.7Z"/>');
 
-  const style = document.createElement("style");
-  style.textContent = `
-    .project-icon-link {
-      width: 36px;
-      height: 36px;
-      display: grid;
-      place-items: center;
-      flex: none;
-      border: 1px solid var(--line-strong);
-      border-radius: 7px;
-      background: var(--surface);
-      color: var(--muted);
-      text-decoration: none;
-    }
-    .project-icon-link:hover {
-      border-color: #556070;
-      background: var(--surface-raised);
-      color: var(--text);
-    }
-    .project-icon-link svg { width: 18px; height: 18px; }
-    .project-meta-links {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      flex-wrap: wrap;
-      gap: 5px 12px;
-      margin-left: 10px;
-    }
-    .project-meta-links a {
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-      color: #79a7f6;
-      font-weight: 700;
-      text-decoration: none;
-    }
-    .project-meta-links a:hover { color: #a4c4fa; text-decoration: underline; }
-    .project-meta-links svg { width: 12px; height: 12px; }
-    @media (max-width: 720px) {
-      .project-icon-link { width: 34px; height: 34px; }
-    }
-  `;
-  document.head.append(style);
-
   const headerActions = document.querySelector(".header-actions");
   const status = document.querySelector("#status");
-  const repositoryLink = document.createElement("a");
-  repositoryLink.className = "project-icon-link";
-  repositoryLink.href = links.repository;
-  repositoryLink.target = "_blank";
-  repositoryLink.rel = "noreferrer";
-  repositoryLink.title = "Open GitHub repository";
-  repositoryLink.setAttribute("aria-label", "Open GitHub repository");
-  repositoryLink.innerHTML = githubIcon;
-  headerActions.insertBefore(repositoryLink, status);
+
+  function createHeaderLink({ href, title, content }) {
+    const link = document.createElement("a");
+    link.className = "project-icon-link";
+    link.href = href;
+    link.target = "_blank";
+    link.rel = "noreferrer";
+    link.title = title;
+    link.setAttribute("aria-label", title);
+    link.innerHTML = content;
+    return link;
+  }
+
+  headerActions.insertBefore(createHeaderLink({
+    href: links.repository,
+    title: "Open GitHub repository",
+    content: githubIcon
+  }), status);
 
   if (links.support) {
-    const supportLink = document.createElement("a");
-    supportLink.className = "project-icon-link";
-    supportLink.href = links.support;
-    supportLink.target = "_blank";
-    supportLink.rel = "noreferrer";
-    supportLink.title = "Support the project";
-    supportLink.setAttribute("aria-label", "Support the project");
-    supportLink.innerHTML = heartIcon;
-    headerActions.insertBefore(supportLink, status);
+    headerActions.insertBefore(createHeaderLink({
+      href: links.support,
+      title: "Support the project",
+      content: heartIcon
+    }), status);
   }
 
   const privacy = document.querySelector(".privacy-note");

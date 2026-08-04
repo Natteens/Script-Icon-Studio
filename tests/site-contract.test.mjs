@@ -12,13 +12,22 @@ test("production metadata uses the official Pages domain", () => {
 
 test("scripts load locally and in dependency order", () => {
   const appIndex = html.indexOf("./js/app.js");
-  const qolIndex = html.indexOf("./js/qol.js");
+  const toolsIndex = html.indexOf("./js/editor-tools.js");
+  const sessionIndex = html.indexOf("./js/editor-session.js");
   const linksIndex = html.indexOf("./js/project-links.js");
 
   assert.ok(appIndex >= 0, "app.js is missing");
-  assert.ok(qolIndex > appIndex, "qol.js must load after app.js");
-  assert.ok(linksIndex > qolIndex, "project-links.js must load after qol.js");
+  assert.ok(toolsIndex > appIndex, "editor-tools.js must load after app.js");
+  assert.ok(sessionIndex > toolsIndex, "editor-session.js must load after editor-tools.js");
+  assert.ok(linksIndex > sessionIndex, "project-links.js must load after editor-session.js");
+  assert.doesNotMatch(html, /qol\.js/);
   assert.doesNotMatch(html, /<script[^>]+src="https?:\/\//i);
+});
+
+test("component styles load from local CSS files", () => {
+  assert.match(html, /\.\/css\/editor-tools\.css/);
+  assert.match(html, /\.\/css\/project-links\.css/);
+  assert.doesNotMatch(html, /<link[^>]+href="https?:\/\//i);
 });
 
 test("Cloudflare security headers preserve icon search", () => {
