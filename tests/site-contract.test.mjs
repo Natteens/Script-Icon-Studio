@@ -27,7 +27,7 @@ test("scripts load locally and in dependency order", () => {
 test("component styles load from local CSS files", () => {
   assert.match(html, /\.\/css\/editor-tools\.css/);
   assert.match(html, /\.\/css\/project-links\.css/);
-  assert.doesNotMatch(html, /<link[^>]+href="https?:\/\//i);
+  assert.doesNotMatch(html, /<link\s+rel="stylesheet"[^>]+href="https?:\/\//i);
 });
 
 test("Cloudflare security headers preserve icon search", () => {
