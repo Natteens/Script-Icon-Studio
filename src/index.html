@@ -10,10 +10,12 @@
     <link rel="icon" href="./assets/script-icon-studio.svg" type="image/svg+xml" />
     <link rel="stylesheet" href="./css/styles.css?v=7" />
     <link rel="stylesheet" href="./css/editor-tools.css?v=1" />
+    <link rel="stylesheet" href="./css/glyph-library.css?v=1" />
     <link rel="stylesheet" href="./css/project-links.css?v=1" />
     <script src="./js/app.js?v=7" defer></script>
     <script src="./js/editor-tools.js?v=1" defer></script>
     <script src="./js/editor-session.js?v=1" defer></script>
+    <script src="./js/glyph-library.js?v=1" defer></script>
     <script src="./js/project-links.js?v=2" defer></script>
   </head>
   <body>
@@ -90,8 +92,16 @@
             <button data-source="ph" type="button">Phosphor</button>
             <button data-source="material-symbols" type="button">Material</button>
           </div>
+          <div class="glyph-collection-tabs" id="glyph-collection-tabs" role="tablist" aria-label="Glyph collections">
+            <button class="active" data-glyph-view="browse" role="tab" aria-selected="true" type="button">Browse</button>
+            <button data-glyph-view="recent" role="tab" aria-selected="false" type="button">Recent <span class="collection-count" id="recent-count">0</span></button>
+            <button data-glyph-view="favorites" role="tab" aria-selected="false" type="button">Favorites <span class="collection-count" id="favorite-count">0</span></button>
+          </div>
           <div class="glyph-results" id="glyph-results" aria-live="polite"></div>
-          <div class="results-footer"><span id="results-info">Quick picks</span><span id="selected-source">Built-in glyph</span></div>
+          <div class="results-footer">
+            <span id="results-info">Quick picks</span>
+            <span class="glyph-selection-meta"><span id="selected-source">Built-in glyph</span><button class="favorite-current" id="favorite-current" type="button" aria-pressed="false">☆ Favorite</button></span>
+          </div>
         </section>
 
         <section class="control-block text-section">
