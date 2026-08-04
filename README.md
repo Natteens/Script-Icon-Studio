@@ -11,6 +11,8 @@
 <p align="center">
   <a href="https://scripticonstudio.pages.dev/"><strong>Open the editor</strong></a>
   ·
+  <a href="https://github.com/sponsors/Natteens">Support the project</a>
+  ·
   <a href="./THIRD_PARTY_NOTICES.md">Icon licenses</a>
   ·
   <a href="./LICENSE">MIT License</a>
@@ -73,6 +75,12 @@ The current icon is stored in the browser automatically. Reloading or reopening 
 
 Undo and redo history is kept for the current browser session. Imported SVG geometry, colors, transforms, labels, and the custom file name are included in saved drafts.
 
+## Support
+
+Script Icon Studio is free and open source. Optional sponsorships support maintenance, bug fixes, and future improvements through [GitHub Sponsors](https://github.com/sponsors/Natteens).
+
+Sponsorship does not provide private support, custom development, or access to private repositories.
+
 ## Run locally
 
 The project uses plain HTML, CSS, and JavaScript.
@@ -93,6 +101,7 @@ src/
 │   └── styles.css
 ├── js/
 │   ├── app.js
+│   ├── project-links.js
 │   └── qol.js
 ├── .nojekyll
 └── index.html
