@@ -86,10 +86,38 @@ test("saved projects preserve imported SVG names and use the complete reset path
 });
 
 test("saved projects provide explicit management actions", () => {
-  for (const action of ["Save new", "Update current", "New editor", "Open", "Duplicate", "Rename", "Delete"]) {
+  for (const action of ["Save new", "Update current", "New editor", "Open", "Export", "Duplicate", "Rename", "Delete"]) {
     assert.ok(projectLibrary.includes(action), `Missing saved project action: ${action}`);
   }
   assert.match(projectLibrary, /Stored locally\. Nothing is uploaded\./);
+});
+
+test("project JSON uses explicit portable formats and local downloads", () => {
+  assert.match(projectLibrary, /script-icon-studio-project/);
+  assert.match(projectLibrary, /script-icon-studio-library/);
+  assert.match(projectLibrary, /const PORTABLE_VERSION = 1/);
+  assert.match(projectLibrary, /new Blob\(\[content\], \{ type: "application\/json;charset=utf-8" \}\)/);
+  assert.match(projectLibrary, /script_icon_studio_projects_\$\{date\}\.json/);
+  assert.match(projectLibrary, /script_icon_studio_\$\{slug\(project\.name\)\}\.json/);
+});
+
+test("project JSON import is bounded, atomic, and sanitized", () => {
+  assert.match(projectLibrary, /const IMPORT_FILE_SIZE_LIMIT = 5000000/);
+  assert.match(projectLibrary, /JSON\.parse\(await file\.text\(\)\)/);
+  assert.match(projectLibrary, /const normalized = candidates\.map\(normalizePortableProject\)/);
+  assert.match(projectLibrary, /normalized\.some\(\(project\) => !project\)/);
+  assert.match(projectLibrary, /if \(normalized\.length > available\)/);
+  assert.match(projectLibrary, /sanitizeSnapshot\(value\.snapshot\)/);
+  assert.match(projectLibrary, /id: makeId\(\)/);
+  assert.match(projectLibrary, /uniqueImportedName\(project\.name, takenNames\)/);
+});
+
+test("project transfer controls support individual and library files", () => {
+  for (const action of ["Import JSON", "Export all", "Move saved projects between browsers or keep a local backup."]) {
+    assert.ok(projectLibrary.includes(action), `Missing project transfer control: ${action}`);
+  }
+  assert.match(projectLibrary, /accept="application\/json,\.json"/);
+  assert.match(projectLibrary, /createAction\("Export"/);
 });
 
 test("component scripts keep styles in CSS files", () => {
