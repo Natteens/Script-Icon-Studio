@@ -57,3 +57,10 @@ test("component scripts keep styles in CSS files", () => {
   assert.doesNotMatch(editorTools, /document\.createElement\("style"\)/);
   assert.doesNotMatch(projectLinks, /document\.createElement\("style"\)/);
 });
+
+test("project support is presented as a clear sponsor action", () => {
+  assert.match(projectLinks, /className: "project-support-link"/);
+  assert.match(projectLinks, /<span>Sponsor<\/span>/);
+  assert.match(projectLinks, /Become a sponsor and support Script Icon Studio/);
+  assert.match(projectLinks, /Become a sponsor<\/a>/);
+});
