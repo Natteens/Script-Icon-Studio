@@ -1,0 +1,324 @@
+.batch-queue-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.batch-queue-trigger svg {
+  width: 17px;
+  height: 17px;
+  fill: currentColor;
+}
+
+.batch-queue-trigger b {
+  min-width: 18px;
+  height: 18px;
+  display: inline-grid;
+  place-items: center;
+  padding: 0 5px;
+  border-radius: 9px;
+  background: #0e1116;
+  color: var(--muted);
+  font-size: 9px;
+}
+
+.batch-queue-trigger.has-items {
+  border-color: #4f6d95;
+  background: #172131;
+  color: #b9d2fa;
+}
+
+.batch-queue-dialog {
+  width: min(840px, calc(100vw - 32px));
+  max-height: min(820px, calc(100vh - 32px));
+  padding: 0;
+  overflow: hidden;
+  border: 1px solid var(--line-strong);
+  border-radius: 12px;
+  background: #11151a;
+  color: var(--text);
+  box-shadow: 0 26px 90px #000a;
+}
+
+.batch-queue-dialog::backdrop {
+  background: #05070acc;
+  backdrop-filter: blur(4px);
+}
+
+.batch-queue-shell {
+  max-height: min(820px, calc(100vh - 32px));
+  display: grid;
+  grid-template-rows: auto auto auto minmax(150px, 1fr) auto;
+}
+
+.batch-queue-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 20px 22px 17px;
+  border-bottom: 1px solid var(--line);
+}
+
+.batch-queue-header h2 {
+  margin: 0 0 4px;
+  font-size: 17px;
+  letter-spacing: -.02em;
+}
+
+.batch-queue-header p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.batch-queue-close {
+  width: 32px;
+  height: 32px;
+  flex: none;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: var(--surface);
+  color: var(--muted);
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.batch-queue-close:hover {
+  border-color: var(--line-strong);
+  color: var(--text);
+}
+
+.batch-queue-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 22px;
+  border-bottom: 1px solid var(--line);
+  background: #141920;
+}
+
+.batch-queue-toolbar .button {
+  min-height: 34px;
+  padding: 0 11px;
+  font-size: 10px;
+}
+
+.batch-queue-toolbar > span {
+  margin-left: auto;
+  color: var(--muted);
+  font-size: 9px;
+}
+
+.batch-queue-outputs {
+  min-height: 46px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 0 22px;
+  border-bottom: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 10px;
+}
+
+.batch-queue-outputs strong {
+  color: var(--text);
+  font-size: 10px;
+}
+
+.batch-queue-outputs label {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  cursor: pointer;
+}
+
+.batch-queue-outputs input {
+  accent-color: #5e93e6;
+}
+
+.batch-queue-list {
+  display: grid;
+  align-content: start;
+  gap: 7px;
+  padding: 12px 14px;
+  overflow-y: auto;
+}
+
+.batch-queue-empty {
+  min-height: 170px;
+  display: grid;
+  place-content: center;
+  gap: 5px;
+  border: 1px dashed var(--line-strong);
+  border-radius: 9px;
+  color: var(--muted);
+  text-align: center;
+}
+
+.batch-queue-empty strong {
+  color: var(--text);
+  font-size: 12px;
+}
+
+.batch-queue-empty span {
+  font-size: 10px;
+}
+
+.batch-queue-item {
+  display: grid;
+  grid-template-columns: 52px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  min-height: 72px;
+  padding: 9px 10px;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  background: var(--surface);
+}
+
+.batch-queue-item:hover {
+  border-color: var(--line-strong);
+  background: var(--surface-raised);
+}
+
+.batch-queue-preview {
+  width: 48px;
+  height: 48px;
+  object-fit: contain;
+  border-radius: 7px;
+  background: linear-gradient(45deg, #161b22 25%, transparent 25%),
+    linear-gradient(-45deg, #161b22 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, #161b22 75%),
+    linear-gradient(-45deg, transparent 75%, #161b22 75%), #0d1117;
+  background-position: 0 0, 0 4px, 4px -4px, -4px 0;
+  background-size: 8px 8px;
+}
+
+.batch-queue-info {
+  min-width: 0;
+  display: grid;
+  gap: 5px;
+}
+
+.batch-queue-info strong,
+.batch-queue-info small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.batch-queue-info strong {
+  font-size: 12px;
+}
+
+.batch-queue-info small {
+  color: var(--muted);
+  font-size: 9px;
+}
+
+.batch-queue-actions {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.batch-queue-action {
+  min-height: 29px;
+  padding: 0 8px;
+  border: 1px solid transparent;
+  border-radius: 5px;
+  background: transparent;
+  color: var(--muted);
+  font-size: 9px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.batch-queue-action:hover {
+  border-color: var(--line-strong);
+  background: #252b34;
+  color: var(--text);
+}
+
+.batch-queue-action.primary {
+  border-color: #3d5f8c;
+  background: #1b3150;
+  color: #b8d5ff;
+}
+
+.batch-queue-action.danger:hover {
+  border-color: #7d3f49;
+  background: #321b20;
+  color: #f4a5b0;
+}
+
+.batch-queue-footer {
+  min-height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 0 22px;
+  border-top: 1px solid var(--line);
+  color: var(--subtle);
+  font-size: 9px;
+}
+
+.batch-queue-footer .button {
+  min-width: 124px;
+  min-height: 35px;
+  font-size: 10px;
+}
+
+@media (max-width: 1220px) {
+  .batch-queue-trigger {
+    width: 36px;
+    padding: 0;
+    justify-content: center;
+  }
+
+  .batch-queue-trigger span,
+  .batch-queue-trigger b {
+    display: none;
+  }
+}
+
+@media (max-width: 760px) {
+  .batch-queue-dialog,
+  .batch-queue-shell {
+    width: calc(100vw - 20px);
+    max-height: calc(100vh - 20px);
+  }
+
+  .batch-queue-toolbar,
+  .batch-queue-outputs {
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
+
+  .batch-queue-toolbar > span {
+    width: 100%;
+    margin-left: 0;
+  }
+
+  .batch-queue-outputs {
+    padding-top: 10px;
+    padding-bottom: 10px;
+  }
+
+  .batch-queue-item {
+    grid-template-columns: 48px minmax(0, 1fr);
+  }
+
+  .batch-queue-actions {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+  }
+
+  .batch-queue-action {
+    padding: 0 5px;
+  }
+}
