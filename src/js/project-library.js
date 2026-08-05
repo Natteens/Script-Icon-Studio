@@ -4,6 +4,10 @@
   const STORAGE_KEY = "script-icon-studio:projects:v1";
   const PROJECT_LIMIT = 30;
   const SNAPSHOT_SIZE_LIMIT = 600000;
+  const IMPORT_FILE_SIZE_LIMIT = 5000000;
+  const PORTABLE_VERSION = 1;
+  const PROJECT_EXPORT_FORMAT = "script-icon-studio-project";
+  const LIBRARY_EXPORT_FORMAT = "script-icon-studio-library";
   const session = window.ScriptIconStudioSession;
 
   if (!session) throw new Error("ScriptIconStudioSession must load before project-library.js");
@@ -102,15 +106,30 @@
     };
   }
 
+  function validTimestamp(value, fallback) {
+    const timestamp = Number(value);
+    return Number.isFinite(timestamp) && timestamp > 0 ? timestamp : fallback;
+  }
+
   function normalizeProject(value) {
     if (!value || typeof value !== "object") return null;
     const id = String(value.id || "").slice(0, 100);
     const name = cleanName(value.name);
     const snapshot = sanitizeSnapshot(value.snapshot);
     if (!id || !name || !snapshot) return null;
-    const createdAt = Number.isFinite(Number(value.createdAt)) ? Number(value.createdAt) : Date.now();
-    const updatedAt = Number.isFinite(Number(value.updatedAt)) ? Number(value.updatedAt) : createdAt;
+    const createdAt = validTimestamp(value.createdAt, Date.now());
+    const updatedAt = validTimestamp(value.updatedAt, createdAt);
     return { id, name, createdAt, updatedAt, snapshot };
+  }
+
+  function normalizePortableProject(value) {
+    if (!value || typeof value !== "object") return null;
+    const name = cleanName(value.name);
+    const snapshot = sanitizeSnapshot(value.snapshot);
+    if (!name || !snapshot) return null;
+    const createdAt = validTimestamp(value.createdAt, Date.now());
+    const updatedAt = validTimestamp(value.updatedAt, createdAt);
+    return { name, createdAt, updatedAt, snapshot };
   }
 
   function loadLibrary() {
@@ -163,6 +182,12 @@
           <button class="button secondary" id="new-project" type="button">New editor</button>
           <span id="active-project-status">No saved project is open.</span>
         </div>
+        <div class="project-transfer-actions">
+          <input id="import-project-file" type="file" accept="application/json,.json" hidden />
+          <button class="button secondary" id="import-projects" type="button">Import JSON</button>
+          <button class="button secondary" id="export-all-projects" type="button">Export all</button>
+          <span>Move saved projects between browsers or keep a local backup.</span>
+        </div>
       </section>
       <div class="project-list" id="project-list"></div>
       <footer class="project-dialog-footer">
@@ -177,6 +202,9 @@
   const saveNewButton = dialog.querySelector("#save-project-new");
   const updateButton = dialog.querySelector("#update-project");
   const newButton = dialog.querySelector("#new-project");
+  const importButton = dialog.querySelector("#import-projects");
+  const importInput = dialog.querySelector("#import-project-file");
+  const exportAllButton = dialog.querySelector("#export-all-projects");
   const closeButton = dialog.querySelector(".project-dialog-close");
   const list = dialog.querySelector("#project-list");
   const count = dialog.querySelector("#project-count");
@@ -233,6 +261,7 @@
   function updateActiveStatus() {
     const active = activeProject();
     updateButton.disabled = !active;
+    exportAllButton.disabled = library.projects.length === 0;
     activeStatus.textContent = active
       ? `${active.name}${dirty ? " has unsaved changes." : " is up to date."}`
       : "No saved project is open.";
@@ -256,7 +285,7 @@
     if (!projects.length) {
       const empty = document.createElement("div");
       empty.className = "project-list-empty";
-      empty.innerHTML = "<strong>No saved projects yet</strong><span>Name the current icon and save it above.</span>";
+      empty.innerHTML = "<strong>No saved projects yet</strong><span>Name the current icon and save it above, or import a JSON backup.</span>";
       list.append(empty);
       updateHeader();
       updateActiveStatus();
@@ -289,6 +318,7 @@
       actions.className = "project-item-actions";
       actions.append(
         createAction("Open", "primary", () => openProject(project.id)),
+        createAction("Export", "", () => exportProject(project.id)),
         createAction("Duplicate", "", () => duplicateProject(project.id)),
         createAction("Rename", "", () => renameProject(project.id)),
         createAction("Delete", "danger", () => deleteProject(project.id))
@@ -450,6 +480,149 @@
     notify("New editor started.");
   }
 
+  function portableProject(project) {
+    return {
+      name: project.name,
+      createdAt: project.createdAt,
+      updatedAt: project.updatedAt,
+      snapshot: clone(project.snapshot)
+    };
+  }
+
+  function slug(value) {
+    return String(value || "project")
+      .normalize("NFKD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "_")
+      .replace(/^_+|_+$/g, "")
+      .slice(0, 64) || "project";
+  }
+
+  function downloadJson(fileName, payload) {
+    const content = `${JSON.stringify(payload, null, 2)}\n`;
+    const url = URL.createObjectURL(new Blob([content], { type: "application/json;charset=utf-8" }));
+    const anchor = document.createElement("a");
+    anchor.href = url;
+    anchor.download = fileName;
+    document.body.append(anchor);
+    anchor.click();
+    anchor.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 0);
+  }
+
+  function projectPayload(project) {
+    return {
+      format: PROJECT_EXPORT_FORMAT,
+      version: PORTABLE_VERSION,
+      exportedAt: new Date().toISOString(),
+      project: portableProject(project)
+    };
+  }
+
+  function libraryPayload() {
+    return {
+      format: LIBRARY_EXPORT_FORMAT,
+      version: PORTABLE_VERSION,
+      exportedAt: new Date().toISOString(),
+      projects: sortProjects(library.projects).map(portableProject)
+    };
+  }
+
+  function exportProject(id) {
+    const project = library.projects.find((entry) => entry.id === id);
+    if (!project) return;
+    downloadJson(`script_icon_studio_${slug(project.name)}.json`, projectPayload(project));
+    notify(`Exported: ${project.name}`);
+  }
+
+  function exportAllProjects() {
+    if (!library.projects.length) return;
+    const date = new Date().toISOString().slice(0, 10);
+    downloadJson(`script_icon_studio_projects_${date}.json`, libraryPayload());
+    notify(`Exported ${library.projects.length} saved project${library.projects.length === 1 ? "" : "s"}.`);
+  }
+
+  function importedCandidates(payload) {
+    if (!payload || typeof payload !== "object" || payload.version !== PORTABLE_VERSION) return null;
+    if (payload.format === PROJECT_EXPORT_FORMAT) return payload.project ? [payload.project] : null;
+    if (payload.format === LIBRARY_EXPORT_FORMAT) return Array.isArray(payload.projects) ? payload.projects : null;
+    return null;
+  }
+
+  function uniqueImportedName(sourceName, takenNames) {
+    const normalized = sourceName.toLocaleLowerCase();
+    if (!takenNames.has(normalized)) {
+      takenNames.add(normalized);
+      return sourceName;
+    }
+
+    const baseSuffix = " imported";
+    let candidate = `${sourceName.slice(0, Math.max(1, 48 - baseSuffix.length))}${baseSuffix}`;
+    let index = 2;
+    while (takenNames.has(candidate.toLocaleLowerCase())) {
+      const suffix = ` imported ${index++}`;
+      candidate = `${sourceName.slice(0, Math.max(1, 48 - suffix.length))}${suffix}`;
+    }
+    takenNames.add(candidate.toLocaleLowerCase());
+    return candidate;
+  }
+
+  async function importProjects(file) {
+    if (!file) return;
+    if (file.size > IMPORT_FILE_SIZE_LIMIT) {
+      notify("This JSON file is too large to import.");
+      return;
+    }
+
+    let payload;
+    try {
+      payload = JSON.parse(await file.text());
+    } catch {
+      notify("This file is not valid JSON.");
+      return;
+    }
+
+    const candidates = importedCandidates(payload);
+    if (!candidates || !candidates.length) {
+      notify("This is not a supported Script Icon Studio project file.");
+      return;
+    }
+
+    const normalized = candidates.map(normalizePortableProject);
+    if (normalized.some((project) => !project)) {
+      notify("The project file contains invalid or unsupported data.");
+      return;
+    }
+
+    const available = PROJECT_LIMIT - library.projects.length;
+    if (normalized.length > available) {
+      notify(`Not enough space. You can import ${available} more project${available === 1 ? "" : "s"}.`);
+      return;
+    }
+
+    const takenNames = new Set(library.projects.map((project) => project.name.toLocaleLowerCase()));
+    let renamed = 0;
+    const now = Date.now();
+    const imported = normalized.map((project, index) => {
+      const name = uniqueImportedName(project.name, takenNames);
+      if (name !== project.name) renamed += 1;
+      return {
+        id: makeId(),
+        name,
+        createdAt: validTimestamp(project.createdAt, now + index),
+        updatedAt: now + index,
+        snapshot: clone(project.snapshot)
+      };
+    });
+
+    const nextLibrary = { ...library, projects: [...imported, ...library.projects] };
+    if (!saveLibrary(nextLibrary, "Imported projects could not be stored in this browser.")) return;
+    renderProjects();
+    const renameNote = renamed ? ` ${renamed} duplicate name${renamed === 1 ? " was" : "s were"} renamed.` : "";
+    notify(`Imported ${imported.length} project${imported.length === 1 ? "" : "s"}.${renameNote}`);
+  }
+
   function refreshDirtyState() {
     dirtyQueued = false;
     const project = activeProject();
@@ -485,6 +658,13 @@
   saveNewButton.addEventListener("click", saveNewProject);
   updateButton.addEventListener("click", updateCurrentProject);
   newButton.addEventListener("click", startNewEditor);
+  importButton.addEventListener("click", () => importInput.click());
+  importInput.addEventListener("change", async () => {
+    const [file] = importInput.files || [];
+    importInput.value = "";
+    await importProjects(file);
+  });
+  exportAllButton.addEventListener("click", exportAllProjects);
   nameInput.addEventListener("keydown", (event) => {
     if (event.key === "Enter") {
       event.preventDefault();
