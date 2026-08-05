@@ -5,6 +5,7 @@ import test from "node:test";
 const app = await readFile(new URL("../src/js/app.js", import.meta.url), "utf8");
 const editorTools = await readFile(new URL("../src/js/editor-tools.js", import.meta.url), "utf8");
 const editorSession = await readFile(new URL("../src/js/editor-session.js", import.meta.url), "utf8");
+const paletteLibrary = await readFile(new URL("../src/js/palette-library.js", import.meta.url), "utf8");
 const projectLibrary = await readFile(new URL("../src/js/project-library.js", import.meta.url), "utf8");
 const glyphLibrary = await readFile(new URL("../src/js/glyph-library.js", import.meta.url), "utf8");
 const projectLinks = await readFile(new URL("../src/js/project-links.js", import.meta.url), "utf8");
@@ -13,6 +14,7 @@ test("browser scripts compile as JavaScript", () => {
   assert.doesNotThrow(() => new Function(app));
   assert.doesNotThrow(() => new Function(editorTools));
   assert.doesNotThrow(() => new Function(editorSession));
+  assert.doesNotThrow(() => new Function(paletteLibrary));
   assert.doesNotThrow(() => new Function(projectLibrary));
   assert.doesNotThrow(() => new Function(glyphLibrary));
   assert.doesNotThrow(() => new Function(projectLinks));
@@ -63,6 +65,28 @@ test("editor session exposes reusable snapshots for saved projects", () => {
   assert.match(editorSession, /apply\(snapshot, message = "Project opened"\)/);
   assert.match(editorSession, /resetHistory\(reason = "history-reset"\)/);
   assert.match(editorSession, /replaceHistoryWithCurrent\("project-open"\)/);
+});
+
+test("custom palettes stay local and normalize every editor color", () => {
+  assert.match(paletteLibrary, /script-icon-studio:palettes:v1/);
+  assert.match(paletteLibrary, /const PALETTE_LIMIT = 24/);
+  assert.match(paletteLibrary, /const COLOR_KEYS = \["background", "glyph", "outline", "band", "text"\]/);
+  assert.match(paletteLibrary, /normalizeHex\(value\[key\]\)/);
+  assert.match(paletteLibrary, /localStorage\.setItem\(STORAGE_KEY/);
+  assert.match(paletteLibrary, /window\.addEventListener\(session\.eventName/);
+  assert.doesNotMatch(paletteLibrary, /\bfetch\s*\(/);
+  assert.doesNotMatch(paletteLibrary, /XMLHttpRequest/);
+  assert.doesNotMatch(paletteLibrary, /setInterval\s*\(/);
+});
+
+test("custom palettes provide complete management actions", () => {
+  for (const action of ["Save current", "Apply palette", "Update", "Rename", "Delete"]) {
+    assert.ok(paletteLibrary.includes(action), `Missing custom palette action: ${action}`);
+  }
+  assert.match(paletteLibrary, /A built-in palette already uses this name/);
+  assert.match(paletteLibrary, /sameColors\(item\.colors, state\.palette\)/);
+  assert.match(paletteLibrary, /state\.palette = \{ name: palette\.name/);
+  assert.match(paletteLibrary, /Stored locally\. Projects already preserve their own colors\./);
 });
 
 test("saved projects stay local and sanitize restored SVG data", () => {
@@ -122,6 +146,7 @@ test("project transfer controls support individual and library files", () => {
 
 test("component scripts keep styles in CSS files", () => {
   assert.doesNotMatch(editorTools, /document\.createElement\("style"\)/);
+  assert.doesNotMatch(paletteLibrary, /document\.createElement\("style"\)/);
   assert.doesNotMatch(projectLibrary, /document\.createElement\("style"\)/);
   assert.doesNotMatch(glyphLibrary, /document\.createElement\("style"\)/);
   assert.doesNotMatch(projectLinks, /document\.createElement\("style"\)/);
