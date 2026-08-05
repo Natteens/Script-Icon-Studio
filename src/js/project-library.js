@@ -25,7 +25,13 @@
     const builtIn = builtIns.find((entry) => entry.id === id);
     if (builtIn) return clone(builtIn);
 
-    if (!/^(custom:|[a-z0-9-]+:)[a-z0-9][a-z0-9:_-]*$/i.test(id)) return null;
+    if (id.startsWith("custom:")) {
+      const customId = id.slice("custom:".length).trim();
+      if (!customId || /[\u0000-\u001f\u007f]/.test(customId)) return null;
+    } else if (!/^[a-z0-9-]+:[a-z0-9][a-z0-9:_-]*$/i.test(id)) {
+      return null;
+    }
+
     const viewBox = String(glyph.viewBox || "").slice(0, 120);
     const markup = String(glyph.markup || "");
     if (!viewBox || !markup) return null;
@@ -437,7 +443,7 @@
     if (!saveLibrary({ ...library, activeId: "" })) return;
     nameInput.value = "";
     dirty = false;
-    resetAll();
+    document.querySelector("#reset-all").click();
     queueMicrotask(() => session.resetHistory("new-project"));
     dialog.close();
     renderProjects();
