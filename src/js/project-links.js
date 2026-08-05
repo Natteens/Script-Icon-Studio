@@ -16,9 +16,9 @@
   const headerActions = document.querySelector(".header-actions");
   const status = document.querySelector("#status");
 
-  function createHeaderLink({ href, title, content }) {
+  function createHeaderLink({ href, title, content, className = "" }) {
     const link = document.createElement("a");
-    link.className = "project-icon-link";
+    link.className = ["project-icon-link", className].filter(Boolean).join(" ");
     link.href = href;
     link.target = "_blank";
     link.rel = "noreferrer";
@@ -37,8 +37,9 @@
   if (links.support) {
     headerActions.insertBefore(createHeaderLink({
       href: links.support,
-      title: "Support the project",
-      content: heartIcon
+      title: "Become a sponsor and support Script Icon Studio",
+      className: "project-support-link",
+      content: `${heartIcon}<span>Sponsor</span>`
     }), status);
   }
 
@@ -49,7 +50,7 @@
       <a href="${links.repository}" target="_blank" rel="noreferrer">${githubIcon}GitHub</a>
       <a href="${links.license}" target="_blank" rel="noreferrer">${licenseIcon}MIT License</a>
       <a href="${links.notices}" target="_blank" rel="noreferrer">Third-party licenses</a>
-      ${links.support ? `<a href="${links.support}" target="_blank" rel="noreferrer">${heartIcon}Support</a>` : ""}
+      ${links.support ? `<a class="project-support-meta" href="${links.support}" target="_blank" rel="noreferrer">${heartIcon}Become a sponsor</a>` : ""}
     </span>
   `;
 })();
