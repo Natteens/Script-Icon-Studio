@@ -14,6 +14,7 @@ test("scripts load locally and in dependency order", () => {
   const appIndex = html.indexOf("./js/app.js");
   const toolsIndex = html.indexOf("./js/editor-tools.js");
   const sessionIndex = html.indexOf("./js/editor-session.js");
+  const paletteLibraryIndex = html.indexOf("./js/palette-library.js");
   const projectLibraryIndex = html.indexOf("./js/project-library.js");
   const glyphLibraryIndex = html.indexOf("./js/glyph-library.js");
   const linksIndex = html.indexOf("./js/project-links.js");
@@ -21,7 +22,8 @@ test("scripts load locally and in dependency order", () => {
   assert.ok(appIndex >= 0, "app.js is missing");
   assert.ok(toolsIndex > appIndex, "editor-tools.js must load after app.js");
   assert.ok(sessionIndex > toolsIndex, "editor-session.js must load after editor-tools.js");
-  assert.ok(projectLibraryIndex > sessionIndex, "project-library.js must load after editor-session.js");
+  assert.ok(paletteLibraryIndex > sessionIndex, "palette-library.js must load after editor-session.js");
+  assert.ok(projectLibraryIndex > paletteLibraryIndex, "project-library.js must load after palette-library.js");
   assert.ok(glyphLibraryIndex > projectLibraryIndex, "glyph-library.js must load after project-library.js");
   assert.ok(linksIndex > glyphLibraryIndex, "project-links.js must load after glyph-library.js");
   assert.doesNotMatch(html, /qol\.js/);
@@ -31,6 +33,7 @@ test("scripts load locally and in dependency order", () => {
 test("component styles load from local CSS files", () => {
   assert.match(html, /\.\/css\/editor-tools\.css/);
   assert.match(html, /\.\/css\/glyph-library\.css/);
+  assert.match(html, /\.\/css\/palette-library\.css/);
   assert.match(html, /\.\/css\/project-library\.css/);
   assert.match(html, /\.\/css\/project-links\.css/);
   assert.doesNotMatch(html, /<link\s+rel="stylesheet"[^>]+href="https?:\/\//i);
