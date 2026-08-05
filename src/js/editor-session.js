@@ -2,6 +2,7 @@
 
 (() => {
   const STORAGE_KEY = "script-icon-studio:draft:v2";
+  const SESSION_CHANGE_EVENT = "script-icon-studio:session-change";
   const HISTORY_LIMIT = 80;
   const SNAPSHOT_DELAY = 240;
   const tools = window.ScriptIconStudioTools;
@@ -57,6 +58,10 @@
 
   function fingerprint(snapshot = captureSnapshot()) {
     return JSON.stringify(snapshot);
+  }
+
+  function emitSessionChange(reason) {
+    window.dispatchEvent(new CustomEvent(SESSION_CHANGE_EVENT, { detail: { reason } }));
   }
 
   function saveDraft(snapshot = captureSnapshot()) {
@@ -165,6 +170,7 @@
     lastFingerprint = nextFingerprint;
     saveDraft(snapshot);
     updateHistoryButtons();
+    emitSessionChange("editor-change");
   }
 
   function scheduleSnapshot() {
@@ -185,12 +191,28 @@
     pushCurrentSnapshot();
   }
 
+  function replaceHistoryWithCurrent(reason = "history-reset") {
+    if (snapshotTimer) {
+      clearTimeout(snapshotTimer);
+      snapshotTimer = 0;
+    }
+    const current = captureSnapshot();
+    history = [current];
+    historyIndex = 0;
+    lastFingerprint = fingerprint(current);
+    saveDraft(current);
+    updateHistoryButtons();
+    emitSessionChange(reason);
+    return clone(current);
+  }
+
   function undo() {
     flushScheduledSnapshot();
     if (historyIndex <= 0) return;
     historyIndex -= 1;
     applySnapshot(history[historyIndex], "Undone");
     updateHistoryButtons();
+    emitSessionChange("undo");
   }
 
   function redo() {
@@ -199,6 +221,7 @@
     historyIndex += 1;
     applySnapshot(history[historyIndex], "Redone");
     updateHistoryButtons();
+    emitSessionChange("redo");
   }
 
   try {
@@ -215,6 +238,26 @@
   saveDraft(initial);
   syncCoreUi();
   updateHistoryButtons();
+
+  window.ScriptIconStudioSession = Object.freeze({
+    version: 2,
+    eventName: SESSION_CHANGE_EVENT,
+    capture() {
+      flushScheduledSnapshot();
+      return clone(captureSnapshot());
+    },
+    apply(snapshot, message = "Project opened") {
+      if (!applySnapshot(clone(snapshot), message)) return false;
+      replaceHistoryWithCurrent("project-open");
+      return true;
+    },
+    resetHistory(reason = "history-reset") {
+      return replaceHistoryWithCurrent(reason);
+    },
+    fingerprint(snapshot) {
+      return fingerprint(snapshot);
+    }
+  });
 
   const previewObserver = new MutationObserver(scheduleSnapshot);
   previewObserver.observe(document.querySelector("#main-icon"), { childList: true });
