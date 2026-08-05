@@ -33,10 +33,11 @@ test("component styles load from local CSS files", () => {
   assert.doesNotMatch(html, /<link\s+rel="stylesheet"[^>]+href="https?:\/\//i);
 });
 
-test("Cloudflare security headers preserve icon search", () => {
+test("Cloudflare security headers preserve Iconify search and previews", () => {
   assert.match(headers, /Content-Security-Policy:/);
   assert.match(headers, /frame-ancestors 'none'/);
   assert.match(headers, /object-src 'none'/);
+  assert.match(headers, /img-src 'self' data: blob: https:\/\/api\.iconify\.design/);
   assert.match(headers, /connect-src 'self' https:\/\/api\.iconify\.design/);
   assert.match(headers, /X-Content-Type-Options: nosniff/);
   assert.match(headers, /Referrer-Policy: strict-origin-when-cross-origin/);
