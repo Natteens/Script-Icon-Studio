@@ -78,6 +78,13 @@ test("saved projects stay local and sanitize restored SVG data", () => {
   assert.doesNotMatch(projectLibrary, /setInterval\s*\(/);
 });
 
+test("saved projects preserve imported SVG names and use the complete reset path", () => {
+  assert.match(projectLibrary, /id\.startsWith\("custom:"\)/);
+  assert.match(projectLibrary, /id\.slice\("custom:"\.length\)\.trim\(\)/);
+  assert.match(projectLibrary, /document\.querySelector\("#reset-all"\)\.click\(\)/);
+  assert.doesNotMatch(projectLibrary, /\n\s+resetAll\(\);/);
+});
+
 test("saved projects provide explicit management actions", () => {
   for (const action of ["Save new", "Update current", "New editor", "Open", "Duplicate", "Rename", "Delete"]) {
     assert.ok(projectLibrary.includes(action), `Missing saved project action: ${action}`);
