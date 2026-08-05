@@ -28,6 +28,13 @@
     return link;
   }
 
+  function loadLocalAsset(tagName, attributes) {
+    const element = document.createElement(tagName);
+    Object.entries(attributes).forEach(([name, value]) => element.setAttribute(name, value));
+    document.head.append(element);
+    return element;
+  }
+
   headerActions.insertBefore(createHeaderLink({
     href: links.repository,
     title: "Open GitHub repository",
@@ -53,4 +60,17 @@
       ${links.support ? `<a class="project-support-meta" href="${links.support}" target="_blank" rel="noreferrer">${heartIcon}Become a sponsor</a>` : ""}
     </span>
   `;
+
+  const projectName = document.querySelector("#project-name");
+  const paletteName = document.querySelector("#custom-palette-name");
+  if (projectName) projectName.placeholder = "Player Controller";
+  if (paletteName) paletteName.placeholder = "Ocean Blue";
+
+  loadLocalAsset("link", {
+    rel: "stylesheet",
+    href: "./css/batch-queue.css?v=1"
+  });
+  loadLocalAsset("script", {
+    src: "./js/batch-queue.js?v=1"
+  });
 })();
