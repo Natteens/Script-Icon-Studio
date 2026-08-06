@@ -24,7 +24,7 @@ Some Lucide icons are derived from Feather Icons and remain available under the 
 
 ## Arimo label outlines
 
-- Source: https://github.com/google/fonts/tree/main/apache/arimo
+- Source: https://github.com/google/fonts/tree/main/ofl/arimo
 - License: SIL Open Font License 1.1
 - Copyright: 2010 Google Inc.
 
