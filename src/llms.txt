@@ -1,0 +1,26 @@
+# Script Icon Studio
+
+> A lightweight browser editor for creating consistent 64×64 script, package, and UI icons.
+
+## Primary links
+
+- [Live editor](https://scripticonstudio.pages.dev/)
+- [Source repository](https://github.com/Natteens/Script-Icon-Studio)
+- [MIT license](https://github.com/Natteens/Script-Icon-Studio/blob/main/LICENSE)
+- [Third-party notices](https://github.com/Natteens/Script-Icon-Studio/blob/main/THIRD_PARTY_NOTICES.md)
+
+## Capabilities
+
+- Customize icon shapes, colors, glyphs, outlines, labels, size, position, and rotation.
+- Search selected open-source icon collections through the Iconify API.
+- Import custom SVG glyphs and silhouettes.
+- Save projects, palettes, recent glyphs, favorites, and export queues in the local browser.
+- Export PNG images and flattened 64×64 Unity UI Toolkit SVG files.
+
+## Privacy and networking
+
+Editing, project storage, and export happen in the browser. Only remote glyph search and glyph retrieval use the network. The application does not require an account and does not upload user projects.
+
+## Project status
+
+Script Icon Studio is an independent open-source project and is not affiliated with Unity Technologies.
