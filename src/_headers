@@ -7,7 +7,7 @@
   Cross-Origin-Resource-Policy: same-origin
   Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=(), usb=(), browsing-topics=(), clipboard-write=(self)
 
-/sitemap.txt
+/sitemap.xml
   Cache-Control: public, max-age=0, must-revalidate
 
 /robots.txt
