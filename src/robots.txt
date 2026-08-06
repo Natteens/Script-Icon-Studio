@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://scripticonstudio.pages.dev/sitemap.xml
+Sitemap: https://scripticonstudio.pages.dev/sitemap.txt
