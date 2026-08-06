@@ -22,6 +22,14 @@ Some Lucide icons are derived from Feather Icons and remain available under the 
 - License: Apache License 2.0
 - Copyright: Google LLC
 
+## Arimo label outlines
+
+- Source: https://github.com/google/fonts/tree/main/apache/arimo
+- License: SIL Open Font License 1.1
+- Copyright: 2010 Google Inc.
+
+Script Icon Studio contains a limited set of vector glyph outlines derived from Arimo Bold so labels can be exported as filled SVG paths without distributing or depending on a font file.
+
 ## Iconify API
 
 - Source: https://github.com/iconify/api
