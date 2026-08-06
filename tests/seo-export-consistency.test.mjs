@@ -5,6 +5,7 @@ import test from "node:test";
 const index = await readFile(new URL("../src/index.html", import.meta.url), "utf8");
 const sitemap = await readFile(new URL("../src/sitemap.xml", import.meta.url), "utf8");
 const robots = await readFile(new URL("../src/robots.txt", import.meta.url), "utf8");
+const headers = await readFile(new URL("../src/_headers", import.meta.url), "utf8");
 const llms = await readFile(new URL("../src/llms.txt", import.meta.url), "utf8");
 const labelFont = await readFile(new URL("../src/js/label-font.js", import.meta.url), "utf8");
 const queueFix = await readFile(new URL("../src/js/queue-export-fix.js", import.meta.url), "utf8");
@@ -23,6 +24,12 @@ test("sitemap and robots expose only the production URL", () => {
   assert.match(robots, /User-agent: \*/);
   assert.match(robots, /Allow: \/$/m);
   assert.match(robots, /Sitemap: https:\/\/scripticonstudio\.pages\.dev\/sitemap\.xml/);
+});
+
+test("crawler files declare stable MIME types", () => {
+  assert.match(headers, /\/sitemap\.xml\s+Content-Type: application\/xml; charset=utf-8/s);
+  assert.match(headers, /\/robots\.txt\s+Content-Type: text\/plain; charset=utf-8/s);
+  assert.match(headers, /\/sitemap\.xml[\s\S]*?Cache-Control: public, max-age=0, must-revalidate/);
 });
 
 test("llms file gives a concise machine-readable project summary", () => {
