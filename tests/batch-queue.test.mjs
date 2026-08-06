@@ -63,8 +63,11 @@ test("queue output choices include Unity SVG and standard PNG sizes", () => {
 test("queue assets are loaded locally and public examples are neutral", () => {
   assert.match(projectLinks, /\.\/css\/batch-queue\.css\?v=1/);
   assert.match(projectLinks, /\.\/js\/export-quality\.js\?v=1/);
+  assert.match(projectLinks, /\.\/js\/label-font\.js\?v=1/);
   assert.match(projectLinks, /\.\/js\/batch-queue\.js\?v=2/);
-  assert.match(projectLinks, /qualityScript\.addEventListener\("load"/);
+  assert.match(projectLinks, /\.\/js\/queue-export-fix\.js\?v=1/);
+  assert.match(projectLinks, /function loadScript\s*\(/);
+  assert.match(projectLinks, /await window\.ScriptIconStudioLabelFontReady/);
   assert.match(projectLinks, /projectName\.placeholder = "Player Controller"/);
   assert.match(projectLinks, /paletteName\.placeholder = "Ocean Blue"/);
   assert.doesNotMatch(projectLinks, /Fynite/i);
