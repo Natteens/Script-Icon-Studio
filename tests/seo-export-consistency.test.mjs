@@ -3,7 +3,8 @@ import { readFile } from "node:fs/promises";
 import test from "node:test";
 
 const index = await readFile(new URL("../src/index.html", import.meta.url), "utf8");
-const sitemap = await readFile(new URL("../src/sitemap.xml", import.meta.url), "utf8");
+const sitemapXml = await readFile(new URL("../src/sitemap.xml", import.meta.url), "utf8");
+const sitemapText = await readFile(new URL("../src/sitemap.txt", import.meta.url), "utf8");
 const robots = await readFile(new URL("../src/robots.txt", import.meta.url), "utf8");
 const headers = await readFile(new URL("../src/_headers", import.meta.url), "utf8");
 const llms = await readFile(new URL("../src/llms.txt", import.meta.url), "utf8");
@@ -11,25 +12,32 @@ const labelFont = await readFile(new URL("../src/js/label-font.js", import.meta.
 const queueFix = await readFile(new URL("../src/js/queue-export-fix.js", import.meta.url), "utf8");
 const projectLinks = await readFile(new URL("../src/js/project-links.js", import.meta.url), "utf8");
 
+const productionUrl = "https://scripticonstudio.pages.dev/";
+
 test("production metadata points to the canonical Pages domain", () => {
   assert.match(index, /<meta name="description" content="[^"]{40,}"/);
   assert.match(index, /<link rel="canonical" href="https:\/\/scripticonstudio\.pages\.dev\/"/);
   assert.doesNotMatch(index, /\d+\.scripticonstudio\.pages\.dev/);
 });
 
-test("sitemap and robots expose only the production URL", () => {
-  assert.match(sitemap, /<urlset xmlns="http:\/\/www\.sitemaps\.org\/schemas\/sitemap\/0\.9">/);
-  assert.match(sitemap, /<loc>https:\/\/scripticonstudio\.pages\.dev\/<\/loc>/);
-  assert.doesNotMatch(sitemap, /\d+\.scripticonstudio\.pages\.dev/);
-  assert.match(robots, /User-agent: \*/);
-  assert.match(robots, /Allow: \/$/m);
-  assert.match(robots, /Sitemap: https:\/\/scripticonstudio\.pages\.dev\/sitemap\.xml/);
+test("XML and text sitemaps contain only the production URL", () => {
+  assert.match(sitemapXml, /<urlset xmlns="http:\/\/www\.sitemaps\.org\/schemas\/sitemap\/0\.9">/);
+  assert.match(sitemapXml, /<loc>https:\/\/scripticonstudio\.pages\.dev\/<\/loc>/);
+  assert.equal(sitemapText, `${productionUrl}\n`);
+  assert.doesNotMatch(sitemapXml, /\d+\.scripticonstudio\.pages\.dev/);
+  assert.doesNotMatch(sitemapText, /\d+\.scripticonstudio\.pages\.dev/);
 });
 
-test("crawler files declare stable MIME types", () => {
-  assert.match(headers, /\/sitemap\.xml\s+Content-Type: application\/xml; charset=utf-8/s);
-  assert.match(headers, /\/robots\.txt\s+Content-Type: text\/plain; charset=utf-8/s);
-  assert.match(headers, /\/sitemap\.xml[\s\S]*?Cache-Control: public, max-age=0, must-revalidate/);
+test("robots points crawlers to the plain text sitemap", () => {
+  assert.match(robots, /User-agent: \*/);
+  assert.match(robots, /Allow: \/$/m);
+  assert.match(robots, /Sitemap: https:\/\/scripticonstudio\.pages\.dev\/sitemap\.txt/);
+});
+
+test("crawler files avoid custom content type overrides", () => {
+  assert.match(headers, /\/sitemap\.txt[\s\S]*?Cache-Control: public, max-age=0, must-revalidate/);
+  assert.match(headers, /\/robots\.txt[\s\S]*?Cache-Control: public, max-age=0, must-revalidate/);
+  assert.doesNotMatch(headers, /Content-Type:/);
 });
 
 test("llms file gives a concise machine-readable project summary", () => {
