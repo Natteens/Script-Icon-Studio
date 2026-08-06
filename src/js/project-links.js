@@ -35,6 +35,14 @@
     return element;
   }
 
+  function loadScript(src) {
+    return new Promise((resolve, reject) => {
+      const script = loadLocalAsset("script", { src });
+      script.addEventListener("load", resolve, { once: true });
+      script.addEventListener("error", reject, { once: true });
+    });
+  }
+
   headerActions.insertBefore(createHeaderLink({
     href: links.repository,
     title: "Open GitHub repository",
@@ -71,15 +79,15 @@
     href: "./css/batch-queue.css?v=1"
   });
 
-  const qualityScript = loadLocalAsset("script", {
-    src: "./js/export-quality.js?v=1"
-  });
-  qualityScript.addEventListener("load", () => {
-    loadLocalAsset("script", {
-      src: "./js/batch-queue.js?v=2"
-    });
-  });
-  qualityScript.addEventListener("error", () => {
-    setStatus("Export quality module failed to load");
-  });
+  (async () => {
+    try {
+      await loadScript("./js/export-quality.js?v=1");
+      await loadScript("./js/label-font.js?v=1");
+      await window.ScriptIconStudioLabelFontReady;
+      await loadScript("./js/batch-queue.js?v=2");
+      await loadScript("./js/queue-export-fix.js?v=1");
+    } catch {
+      setStatus("Export modules failed to load");
+    }
+  })();
 })();
