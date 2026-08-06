@@ -70,7 +70,16 @@
     rel: "stylesheet",
     href: "./css/batch-queue.css?v=1"
   });
-  loadLocalAsset("script", {
-    src: "./js/batch-queue.js?v=1"
+
+  const qualityScript = loadLocalAsset("script", {
+    src: "./js/export-quality.js?v=1"
+  });
+  qualityScript.addEventListener("load", () => {
+    loadLocalAsset("script", {
+      src: "./js/batch-queue.js?v=2"
+    });
+  });
+  qualityScript.addEventListener("error", () => {
+    setStatus("Export quality module failed to load");
   });
 })();
