@@ -86,6 +86,7 @@
       await window.ScriptIconStudioLabelFontReady;
       await loadScript("./js/batch-queue.js?v=2");
       await loadScript("./js/queue-export-fix.js?v=1");
+      await loadScript("./js/project-queue-bridge.js?v=1");
     } catch {
       setStatus("Export modules failed to load");
     }
