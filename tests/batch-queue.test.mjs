@@ -6,11 +6,13 @@ const queue = await readFile(new URL("../src/js/batch-queue.js", import.meta.url
 const queueCss = await readFile(new URL("../src/css/batch-queue.css", import.meta.url), "utf8");
 const projectLinks = await readFile(new URL("../src/js/project-links.js", import.meta.url), "utf8");
 
-test("batch queue script compiles and remains local", () => {
+test("batch queue script compiles, remains local, and has no arbitrary count cap", () => {
   assert.doesNotThrow(() => new Function(queue));
   assert.match(queue, /script-icon-studio:icon-queue:v1/);
-  assert.match(queue, /const QUEUE_LIMIT = 24/);
   assert.match(queue, /localStorage\.setItem\(STORAGE_KEY/);
+  assert.match(queue, /limited by browser storage/);
+  assert.doesNotMatch(queue, /QUEUE_LIMIT/);
+  assert.doesNotMatch(queue, /\.slice\(0,\s*QUEUE_LIMIT\)/);
   assert.doesNotMatch(queue, /\bfetch\s*\(/);
   assert.doesNotMatch(queue, /XMLHttpRequest/);
   assert.doesNotMatch(queue, /setInterval\s*\(/);

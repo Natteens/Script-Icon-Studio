@@ -2,7 +2,6 @@
 
 (() => {
   const STORAGE_KEY = "script-icon-studio:projects:v1";
-  const PROJECT_LIMIT = 30;
   const SNAPSHOT_SIZE_LIMIT = 600000;
   const IMPORT_FILE_SIZE_LIMIT = 5000000;
   const PORTABLE_VERSION = 1;
@@ -136,7 +135,7 @@
     try {
       const stored = JSON.parse(localStorage.getItem(STORAGE_KEY) || "null");
       const projects = Array.isArray(stored?.projects)
-        ? stored.projects.map(normalizeProject).filter(Boolean).slice(0, PROJECT_LIMIT)
+        ? stored.projects.map(normalizeProject).filter(Boolean)
         : [];
       const activeId = projects.some((project) => project.id === stored?.activeId) ? stored.activeId : "";
       return { version: 1, activeId, projects };
@@ -174,7 +173,7 @@
       <section class="project-save-panel">
         <label for="project-name">Project name</label>
         <div class="project-name-row">
-          <input id="project-name" type="text" maxlength="48" autocomplete="off" spellcheck="false" placeholder="Fynite FSM" />
+          <input id="project-name" type="text" maxlength="48" autocomplete="off" spellcheck="false" placeholder="Player Controller" />
           <button class="button primary" id="save-project-new" type="button">Save new</button>
         </div>
         <div class="project-save-actions">
@@ -186,13 +185,14 @@
           <input id="import-project-file" type="file" accept="application/json,.json" hidden />
           <button class="button secondary" id="import-projects" type="button">Import JSON</button>
           <button class="button secondary" id="export-all-projects" type="button">Export all</button>
+          <button class="button secondary" id="clear-all-projects" type="button">Clear all</button>
           <span>Move saved projects between browsers or keep a local backup.</span>
         </div>
       </section>
       <div class="project-list" id="project-list"></div>
       <footer class="project-dialog-footer">
         <span id="project-storage-note">Stored locally. Nothing is uploaded.</span>
-        <span><b id="project-count">0</b> of ${PROJECT_LIMIT} projects</span>
+        <span><b id="project-count">0</b> projects · limited by browser storage</span>
       </footer>
     </div>
   `;
@@ -205,6 +205,7 @@
   const importButton = dialog.querySelector("#import-projects");
   const importInput = dialog.querySelector("#import-project-file");
   const exportAllButton = dialog.querySelector("#export-all-projects");
+  const clearAllButton = dialog.querySelector("#clear-all-projects");
   const closeButton = dialog.querySelector(".project-dialog-close");
   const list = dialog.querySelector("#project-list");
   const count = dialog.querySelector("#project-count");
@@ -214,7 +215,7 @@
     return library.projects.find((project) => project.id === library.activeId) || null;
   }
 
-  function saveLibrary(nextLibrary, failureMessage = "Saved projects could not be stored in this browser.") {
+  function saveLibrary(nextLibrary, failureMessage = "Saved projects could not be stored. Browser storage may be full.") {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(nextLibrary));
       library = nextLibrary;
@@ -262,6 +263,7 @@
     const active = activeProject();
     updateButton.disabled = !active;
     exportAllButton.disabled = library.projects.length === 0;
+    clearAllButton.disabled = library.projects.length === 0;
     activeStatus.textContent = active
       ? `${active.name}${dirty ? " has unsaved changes." : " is up to date."}`
       : "No saved project is open.";
@@ -366,10 +368,6 @@
       nameInput.focus();
       return;
     }
-    if (library.projects.length >= PROJECT_LIMIT) {
-      notify(`You can keep up to ${PROJECT_LIMIT} saved projects.`);
-      return;
-    }
 
     const snapshot = captureSafeSnapshot();
     if (!snapshot) return;
@@ -418,10 +416,6 @@
   function duplicateProject(id) {
     const source = library.projects.find((project) => project.id === id);
     if (!source) return;
-    if (library.projects.length >= PROJECT_LIMIT) {
-      notify(`You can keep up to ${PROJECT_LIMIT} saved projects.`);
-      return;
-    }
     const now = Date.now();
     const copy = {
       id: makeId(),
@@ -465,6 +459,18 @@
       dirty = false;
     }
     notify(`Deleted: ${project.name}`);
+    renderProjects();
+  }
+
+  function clearAllProjects() {
+    const total = library.projects.length;
+    if (!total) return;
+    const noun = total === 1 ? "project" : "projects";
+    if (!window.confirm(`Delete all ${total} saved ${noun} from this browser? This cannot be undone unless you exported a backup.`)) return;
+    if (!saveLibrary({ version: 1, activeId: "", projects: [] }, "Saved projects could not be cleared from this browser.")) return;
+    nameInput.value = "";
+    dirty = false;
+    notify(`Cleared ${total} saved ${noun}.`);
     renderProjects();
   }
 
@@ -595,12 +601,6 @@
       return;
     }
 
-    const available = PROJECT_LIMIT - library.projects.length;
-    if (normalized.length > available) {
-      notify(`Not enough space. You can import ${available} more project${available === 1 ? "" : "s"}.`);
-      return;
-    }
-
     const takenNames = new Set(library.projects.map((project) => project.name.toLocaleLowerCase()));
     let renamed = 0;
     const now = Date.now();
@@ -617,7 +617,7 @@
     });
 
     const nextLibrary = { ...library, projects: [...imported, ...library.projects] };
-    if (!saveLibrary(nextLibrary, "Imported projects could not be stored in this browser.")) return;
+    if (!saveLibrary(nextLibrary, "Imported projects could not be stored. Browser storage may be full.")) return;
     renderProjects();
     const renameNote = renamed ? ` ${renamed} duplicate name${renamed === 1 ? " was" : "s were"} renamed.` : "";
     notify(`Imported ${imported.length} project${imported.length === 1 ? "" : "s"}.${renameNote}`);
@@ -665,6 +665,7 @@
     await importProjects(file);
   });
   exportAllButton.addEventListener("click", exportAllProjects);
+  clearAllButton.addEventListener("click", clearAllProjects);
   nameInput.addEventListener("keydown", (event) => {
     if (event.key === "Enter") {
       event.preventDefault();

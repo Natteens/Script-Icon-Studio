@@ -2,7 +2,6 @@
 
 (() => {
   const STORAGE_KEY = "script-icon-studio:icon-queue:v1";
-  const QUEUE_LIMIT = 24;
   const SNAPSHOT_SIZE_LIMIT = 600000;
   const SVG_SIZE_LIMIT = 750000;
   const COLOR_KEYS = ["background", "glyph", "outline", "band", "text"];
@@ -129,7 +128,7 @@
     try {
       const stored = JSON.parse(localStorage.getItem(STORAGE_KEY) || "null");
       const items = Array.isArray(stored?.items)
-        ? stored.items.map(normalizeItem).filter(Boolean).slice(0, QUEUE_LIMIT)
+        ? stored.items.map(normalizeItem).filter(Boolean)
         : [];
       const outputs = {
         svg: stored?.outputs?.svg !== false,
@@ -183,7 +182,7 @@
       </section>
       <div class="batch-queue-list" id="batch-queue-list"></div>
       <footer class="batch-queue-footer">
-        <span><b id="batch-queue-count">0</b> of ${QUEUE_LIMIT} icons</span>
+        <span><b id="batch-queue-count">0</b> icons · limited by browser storage</span>
         <button class="button primary" id="queue-export-zip" type="button">Download ZIP</button>
       </footer>
     </div>
@@ -204,7 +203,7 @@
       queue = nextQueue;
       return true;
     } catch {
-      notify("The icon queue could not be stored. Remove some large imported icons and try again.");
+      notify("The icon queue could not be stored. Browser storage is full; remove some large queued icons and try again.");
       return false;
     }
   }
@@ -237,7 +236,7 @@
     trigger.classList.toggle("has-items", queue.items.length > 0);
     count.textContent = String(queue.items.length);
     clearButton.disabled = queue.items.length === 0 || exporting;
-    addButton.disabled = queue.items.length >= QUEUE_LIMIT || exporting;
+    addButton.disabled = exporting;
     exportButton.disabled = queue.items.length === 0 || exporting;
     outputInputs.forEach((input) => {
       input.checked = Boolean(queue.outputs[input.dataset.queueOutput]);
@@ -301,10 +300,6 @@
   }
 
   function addCurrent() {
-    if (queue.items.length >= QUEUE_LIMIT) {
-      notify(`You can keep up to ${QUEUE_LIMIT} icons in the queue.`);
-      return;
-    }
     const captured = captureCurrent();
     if (!captured) return;
     const now = Date.now();
@@ -352,10 +347,6 @@
   function duplicateItem(id) {
     const source = queue.items.find((entry) => entry.id === id);
     if (!source) return;
-    if (queue.items.length >= QUEUE_LIMIT) {
-      notify(`You can keep up to ${QUEUE_LIMIT} icons in the queue.`);
-      return;
-    }
     const now = Date.now();
     const copy = {
       ...clone(source),

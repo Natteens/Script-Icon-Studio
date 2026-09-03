@@ -4,7 +4,6 @@
   const PROJECT_STORAGE_KEY = "script-icon-studio:projects:v1";
   const QUEUE_STORAGE_KEY = "script-icon-studio:icon-queue:v1";
   const FLASH_STORAGE_KEY = "script-icon-studio:project-queue-flash:v1";
-  const QUEUE_LIMIT = 24;
   const session = window.ScriptIconStudioSession;
 
   if (!session) throw new Error("ScriptIconStudioSession must load before project-queue-bridge.js");
@@ -34,7 +33,7 @@
           item.snapshot?.version === session.version &&
           typeof item.svg === "string" &&
           validateUnitySvg(item.svg)
-        ).slice(0, QUEUE_LIMIT)
+        )
         : [];
       const outputs = {
         svg: stored?.outputs?.svg !== false,
@@ -132,12 +131,6 @@
     if (!projects.length) return;
 
     const queue = loadQueue();
-    const available = QUEUE_LIMIT - queue.items.length;
-    if (projects.length > available) {
-      notify(`The queue has room for ${available} more icon${available === 1 ? "" : "s"}.`);
-      return;
-    }
-
     const names = new Set(queue.items.map((item) => cleanName(item.name).toLocaleLowerCase()));
     const now = Date.now();
     const added = projects.map((project, index) => queueItemFromProject(project, names, now + index));
@@ -149,7 +142,7 @@
     try {
       localStorage.setItem(QUEUE_STORAGE_KEY, JSON.stringify({ ...queue, items: [...queue.items, ...added] }));
     } catch {
-      notify("The saved projects could not be added to the queue.");
+      notify("The saved projects could not be added. Browser storage may be full.");
       return;
     }
 

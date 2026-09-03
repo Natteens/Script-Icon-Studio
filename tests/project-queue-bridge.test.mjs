@@ -5,22 +5,24 @@ import test from "node:test";
 const bridge = await readFile(new URL("../src/js/project-queue-bridge.js", import.meta.url), "utf8");
 const projectLinks = await readFile(new URL("../src/js/project-links.js", import.meta.url), "utf8");
 
-test("saved projects can be transferred into the icon queue", () => {
+test("saved projects can be transferred into the icon queue without a hard count cap", () => {
   assert.doesNotThrow(() => new Function(bridge));
   assert.match(bridge, /script-icon-studio:projects:v1/);
   assert.match(bridge, /script-icon-studio:icon-queue:v1/);
-  assert.match(bridge, /const QUEUE_LIMIT = 24/);
   assert.match(bridge, /Add to Queue/);
   assert.match(bridge, /Add all to queue/);
   assert.match(bridge, /buildUnitySvg\(\)/);
   assert.match(bridge, /validateUnitySvg\(svg\)/);
   assert.match(bridge, /localStorage\.setItem\(QUEUE_STORAGE_KEY/);
+  assert.doesNotMatch(bridge, /QUEUE_LIMIT/);
+  assert.doesNotMatch(bridge, /room for .* more icon/);
 });
 
 test("project queue transfer stays local and preserves the current renderer state", () => {
   assert.match(bridge, /function captureRenderState\s*\(/);
   assert.match(bridge, /function applyRenderState\s*\(/);
   assert.match(bridge, /finally\s*{\s*applyRenderState\(previous\)/);
+  assert.match(bridge, /Browser storage may be full/);
   assert.doesNotMatch(bridge, /\bfetch\s*\(/);
   assert.doesNotMatch(bridge, /XMLHttpRequest/);
 });

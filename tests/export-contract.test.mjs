@@ -89,14 +89,16 @@ test("custom palettes provide complete management actions", () => {
   assert.match(paletteLibrary, /Stored locally\. Projects already preserve their own colors\./);
 });
 
-test("saved projects stay local and sanitize restored SVG data", () => {
+test("saved projects stay local, sanitized, and have no arbitrary count cap", () => {
   assert.match(projectLibrary, /script-icon-studio:projects:v1/);
-  assert.match(projectLibrary, /const PROJECT_LIMIT = 30/);
   assert.match(projectLibrary, /const SNAPSHOT_SIZE_LIMIT = 600000/);
   assert.match(projectLibrary, /sanitizeSvg\(`/);
   assert.match(projectLibrary, /sanitizeShapeSvg\(`/);
   assert.match(projectLibrary, /session\.capture\(\)/);
   assert.match(projectLibrary, /session\.apply\(snapshot/);
+  assert.match(projectLibrary, /limited by browser storage/);
+  assert.doesNotMatch(projectLibrary, /PROJECT_LIMIT/);
+  assert.doesNotMatch(projectLibrary, /\.slice\(0,\s*PROJECT_LIMIT\)/);
   assert.doesNotMatch(projectLibrary, /\bfetch\s*\(/);
   assert.doesNotMatch(projectLibrary, /XMLHttpRequest/);
   assert.doesNotMatch(projectLibrary, /setInterval\s*\(/);
@@ -109,10 +111,12 @@ test("saved projects preserve imported SVG names and use the complete reset path
   assert.doesNotMatch(projectLibrary, /\n\s+resetAll\(\);/);
 });
 
-test("saved projects provide explicit management actions", () => {
-  for (const action of ["Save new", "Update current", "New editor", "Open", "Export", "Duplicate", "Rename", "Delete"]) {
+test("saved projects provide complete management actions including clear all", () => {
+  for (const action of ["Save new", "Update current", "New editor", "Open", "Export", "Duplicate", "Rename", "Delete", "Clear all"]) {
     assert.ok(projectLibrary.includes(action), `Missing saved project action: ${action}`);
   }
+  assert.match(projectLibrary, /function clearAllProjects\s*\(/);
+  assert.match(projectLibrary, /Delete all \$\{total\} saved/);
   assert.match(projectLibrary, /Stored locally\. Nothing is uploaded\./);
 });
 
@@ -125,15 +129,15 @@ test("project JSON uses explicit portable formats and local downloads", () => {
   assert.match(projectLibrary, /script_icon_studio_\$\{slug\(project\.name\)\}\.json/);
 });
 
-test("project JSON import is bounded, atomic, and sanitized", () => {
+test("project JSON import is bounded per file, atomic, and sanitized without a count cap", () => {
   assert.match(projectLibrary, /const IMPORT_FILE_SIZE_LIMIT = 5000000/);
   assert.match(projectLibrary, /JSON\.parse\(await file\.text\(\)\)/);
   assert.match(projectLibrary, /const normalized = candidates\.map\(normalizePortableProject\)/);
   assert.match(projectLibrary, /normalized\.some\(\(project\) => !project\)/);
-  assert.match(projectLibrary, /if \(normalized\.length > available\)/);
   assert.match(projectLibrary, /sanitizeSnapshot\(value\.snapshot\)/);
   assert.match(projectLibrary, /id: makeId\(\)/);
   assert.match(projectLibrary, /uniqueImportedName\(project\.name, takenNames\)/);
+  assert.doesNotMatch(projectLibrary, /Not enough space\. You can import/);
 });
 
 test("project transfer controls support individual and library files", () => {
